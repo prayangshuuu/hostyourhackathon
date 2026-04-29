@@ -239,7 +239,7 @@
                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('finalize-modal').classList.remove('is-open')">
                         Cancel
                     </button>
-                    <form method="POST" action="{{ route('submissions.submit', $submission) }}" style="margin:0;">
+                    <form method="POST" action="{{ route('submissions.finalize', $submission) }}" style="margin:0;">
                         @csrf
                         <button type="submit" class="btn btn-primary">Yes, Finalize</button>
                     </form>

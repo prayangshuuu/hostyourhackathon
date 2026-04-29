@@ -3,193 +3,171 @@
 namespace App\Http\Controllers\Organizer;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Hackathon\InviteOrganizerRequest;
-use App\Http\Requests\Hackathon\StoreHackathonRequest;
-use App\Http\Requests\Hackathon\UpdateHackathonRequest;
+use App\Http\Requests\StoreHackathonRequest;
+use App\Http\Requests\UpdateHackathonRequest;
 use App\Models\Hackathon;
-use App\Models\User;
-use App\Services\HackathonStatusTransitionService;
+use App\Services\HackathonService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class HackathonController extends Controller
 {
-    public function __construct(
-        protected HackathonStatusTransitionService $statusService,
-    ) {}
-
-    /**
-     * Display a listing of hackathons the user organizes.
-     */
-    public function index(): View
+    public function __construct(private HackathonService $hackathonService)
     {
-        $this->authorize('viewAny', Hackathon::class);
+    }
 
-        $hackathons = Hackathon::where('created_by', Auth::id())
-            ->orWhereHas('organizers', fn ($q) => $q->where('user_id', Auth::id()))
-            ->withCount(['teams', 'segments'])
+    public function index(Request $request): View
+    {
+        $hackathons = Hackathon::where('created_by', $request->user()->id)
+            ->withCount(['teams', 'submissions'])
             ->latest()
-            ->paginate(15);
+            ->get();
 
         return view('organizer.hackathons.index', compact('hackathons'));
     }
 
-    /**
-     * Show the form for creating a new hackathon.
-     */
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
-        $this->authorize('create', Hackathon::class);
+        if (! $this->hackathonService->canCreateHackathon($request->user())) {
+            return redirect()->route('organizer.hackathons.index')
+                ->with('error', 'You already have an active hackathon. Multiple active hackathons are currently disabled.');
+        }
 
         return view('organizer.hackathons.create');
     }
 
-    /**
-     * Store a newly created hackathon.
-     */
     public function store(StoreHackathonRequest $request): RedirectResponse
     {
-        $data = $request->validated();
+        try {
+            $data = $request->validated();
+            
+            $hackathon = $this->hackathonService->store($request->user(), $data);
 
-        // Generate unique slug
-        $slug = Str::slug($data['title']);
-        $originalSlug = $slug;
-        $counter = 1;
+            if ($request->hasFile('logo')) {
+                $hackathon->logo = $request->file('logo')->store('hackathons/' . $hackathon->id, 'public');
+            }
+            if ($request->hasFile('banner')) {
+                $hackathon->banner = $request->file('banner')->store('hackathons/' . $hackathon->id, 'public');
+            }
+            if ($hackathon->isDirty(['logo', 'banner'])) {
+                $hackathon->save();
+            }
 
-        while (Hackathon::withTrashed()->where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter;
-            $counter++;
+            if ($request->has('save_draft')) {
+                return redirect()->route('organizer.hackathons.edit', $hackathon)
+                    ->with('success', 'Hackathon draft saved.');
+            }
+
+            return redirect()->route('organizer.hackathons.show', $hackathon)
+                ->with('success', 'Hackathon created successfully.');
+
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->route('organizer.hackathons.index')
+                ->with('error', $e->getMessage());
         }
-
-        $data['slug'] = $slug;
-        $data['created_by'] = Auth::id();
-
-        // Remove file fields before mass-assign
-        unset($data['logo'], $data['banner']);
-
-        $hackathon = Hackathon::create($data);
-
-        // Handle file uploads
-        $this->handleFileUploads($request, $hackathon);
-
-        return redirect()
-            ->route('organizer.hackathons.show', $hackathon)
-            ->with('success', 'Hackathon created successfully.');
     }
 
-    /**
-     * Display the specified hackathon.
-     */
     public function show(Hackathon $hackathon): View
     {
-        $this->authorize('view', $hackathon);
+        $hackathon->load(['segments', 'organizers']);
+        
+        $judgesCount = $hackathon->judges()->count();
+        $teamsCount = $hackathon->teams()->count();
+        $submissionsCount = $hackathon->submissions()->count();
 
-        $hackathon->load(['segments', 'organizers', 'creator']);
-        $hackathon->loadCount(['teams', 'segments']);
-
-        $nextStatus = $this->statusService->nextStatus($hackathon);
-
-        return view('organizer.hackathons.show', compact('hackathon', 'nextStatus'));
+        return view('organizer.hackathons.show', compact('hackathon', 'judgesCount', 'teamsCount', 'submissionsCount'));
     }
 
-    /**
-     * Show the form for editing the specified hackathon.
-     */
     public function edit(Hackathon $hackathon): View
     {
-        $this->authorize('update', $hackathon);
-
+        $hackathon->load('segments');
         return view('organizer.hackathons.edit', compact('hackathon'));
     }
 
-    /**
-     * Update the specified hackathon.
-     */
     public function update(UpdateHackathonRequest $request, Hackathon $hackathon): RedirectResponse
     {
         $data = $request->validated();
 
-        // Remove file fields before mass-assign
-        unset($data['logo'], $data['banner']);
+        $this->hackathonService->update($hackathon, $data);
 
-        $hackathon->update($data);
+        if ($request->hasFile('logo')) {
+            if ($hackathon->logo) {
+                Storage::disk('public')->delete($hackathon->logo);
+            }
+            $hackathon->logo = $request->file('logo')->store('hackathons/' . $hackathon->id, 'public');
+        }
 
-        // Handle file uploads
-        $this->handleFileUploads($request, $hackathon);
+        if ($request->hasFile('banner')) {
+            if ($hackathon->banner) {
+                Storage::disk('public')->delete($hackathon->banner);
+            }
+            $hackathon->banner = $request->file('banner')->store('hackathons/' . $hackathon->id, 'public');
+        }
 
-        return redirect()
-            ->route('organizer.hackathons.show', $hackathon)
+        if ($hackathon->isDirty(['logo', 'banner'])) {
+            $hackathon->save();
+        }
+
+        return redirect()->route('organizer.hackathons.show', $hackathon)
             ->with('success', 'Hackathon updated successfully.');
     }
 
-    /**
-     * Remove the specified hackathon (soft delete).
-     */
     public function destroy(Hackathon $hackathon): RedirectResponse
     {
-        $this->authorize('delete', $hackathon);
+        // Check if there are active teams or submissions
+        if ($hackathon->teams()->count() > 0) {
+            return back()->with('error', 'Cannot delete a hackathon that has registered teams.');
+        }
+
+        if ($hackathon->logo) {
+            Storage::disk('public')->delete($hackathon->logo);
+        }
+        if ($hackathon->banner) {
+            Storage::disk('public')->delete($hackathon->banner);
+        }
+        
+        Storage::disk('public')->deleteDirectory('hackathons/' . $hackathon->id);
 
         $hackathon->delete();
 
-        return redirect()
-            ->route('organizer.hackathons.index')
+        return redirect()->route('organizer.hackathons.index')
             ->with('success', 'Hackathon deleted successfully.');
     }
 
-    /**
-     * Invite a co-organizer by email.
-     */
-    public function inviteOrganizer(InviteOrganizerRequest $request, Hackathon $hackathon): RedirectResponse
+    public function addOrganizer(Request $request, Hackathon $hackathon): RedirectResponse
     {
-        $user = User::where('email', $request->validated('email'))->firstOrFail();
+        $request->validate(['email' => 'required|email|exists:users,email']);
+        
+        $user = \App\Models\User::where('email', $request->email)->first();
+
+        if ($user->id === $hackathon->created_by) {
+            return back()->with('error', 'This user is the creator of the hackathon.');
+        }
 
         if ($hackathon->organizers()->where('user_id', $user->id)->exists()) {
-            return back()->with('warning', 'This user is already a co-organizer.');
+            return back()->with('error', 'This user is already an organizer.');
         }
 
         $hackathon->organizers()->attach($user->id);
 
-        return back()->with('success', "Co-organizer {$user->name} added successfully.");
+        // Ensure user has organizer role
+        if (! $user->hasRole('organizer')) {
+            $user->assignRole('organizer');
+        }
+
+        return back()->with('success', 'Organizer added successfully.');
     }
 
-    /**
-     * Remove a co-organizer.
-     */
-    public function removeOrganizer(Hackathon $hackathon, User $user): RedirectResponse
+    public function removeOrganizer(Hackathon $hackathon, \App\Models\User $user): RedirectResponse
     {
-        $this->authorize('update', $hackathon);
+        if ($user->id === $hackathon->created_by) {
+            return back()->with('error', 'Cannot remove the creator of the hackathon.');
+        }
 
         $hackathon->organizers()->detach($user->id);
 
-        return back()->with('success', 'Co-organizer removed.');
-    }
-
-    /**
-     * Handle logo and banner file uploads.
-     */
-    protected function handleFileUploads($request, Hackathon $hackathon): void
-    {
-        $directory = "hackathons/{$hackathon->id}";
-
-        if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            if ($hackathon->logo) {
-                Storage::disk('public')->delete($hackathon->logo);
-            }
-            $path = $request->file('logo')->store($directory, 'public');
-            $hackathon->update(['logo' => $path]);
-        }
-
-        if ($request->hasFile('banner')) {
-            // Delete old banner if exists
-            if ($hackathon->banner) {
-                Storage::disk('public')->delete($hackathon->banner);
-            }
-            $path = $request->file('banner')->store($directory, 'public');
-            $hackathon->update(['banner' => $path]);
-        }
+        return back()->with('success', 'Organizer removed successfully.');
     }
 }

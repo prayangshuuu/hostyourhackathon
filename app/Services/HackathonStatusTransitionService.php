@@ -15,7 +15,7 @@ class HackathonStatusTransitionService
      */
     protected static array $transitions = [
         'draft'     => ['published'],
-        'published' => ['ongoing'],
+        'published' => ['ongoing', 'draft'],
         'ongoing'   => ['ended'],
         'ended'     => ['archived'],
         'archived'  => [],

@@ -131,7 +131,7 @@ class SubmissionController extends Controller
     /**
      * Finalize (submit) the submission.
      */
-    public function submit(FinalizeSubmissionRequest $request, Submission $submission): RedirectResponse
+    public function finalize(FinalizeSubmissionRequest $request, Submission $submission): RedirectResponse
     {
         try {
             $this->submissionService->finalize($submission, $request->user());

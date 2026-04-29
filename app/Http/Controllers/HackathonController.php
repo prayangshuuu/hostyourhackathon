@@ -8,40 +8,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
-class PublicController extends Controller
+class HackathonController extends Controller
 {
-    /**
-     * Home page — hero + upcoming hackathons.
-     */
-    public function home(): View
-    {
-        $hackathonsData = Cache::remember('public.hackathons.upcoming', 300, function () {
-            return Hackathon::whereIn('status', [
-                HackathonStatus::Published,
-                HackathonStatus::Ongoing,
-            ])
-                ->latest('registration_opens_at')
-                ->take(6)
-                ->get()
-                ->map->getAttributes()
-                ->all();
-        });
-
-        $hackathons = Hackathon::hydrate($hackathonsData);
-
-        return view('public.home', compact('hackathons'));
-    }
-
     /**
      * Hackathon listing with filters.
      */
-    public function index(): View
+    public function publicIndex(): View
     {
         $hackathonsData = Cache::remember('public.hackathons.all', 300, function () {
             return Hackathon::whereIn('status', [
                 HackathonStatus::Published,
                 HackathonStatus::Ongoing,
-                HackathonStatus::Ended,
             ])
                 ->latest('registration_opens_at')
                 ->get()
@@ -57,8 +34,16 @@ class PublicController extends Controller
     /**
      * Hackathon detail page (tabbed).
      */
-    public function show(Hackathon $hackathon): View
+    public function publicShow($slug): View
     {
+        $hackathon = Hackathon::where('slug', $slug)->firstOrFail();
+
+        if (!in_array($hackathon->status->value, ['published', 'ongoing'])) {
+            if (!Auth::check() || (!Auth::user()->hasRole('super_admin') && $hackathon->created_by !== Auth::id() && !$hackathon->organizers()->where('user_id', Auth::id())->exists())) {
+                abort(404);
+            }
+        }
+
         $hackathon->load([
             'segments',
             'sponsors',

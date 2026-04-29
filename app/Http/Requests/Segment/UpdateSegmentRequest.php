@@ -19,6 +19,7 @@ class UpdateSegmentRequest extends FormRequest
         return [
             'name'        => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'rulebook'    => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
         ];
     }
 }

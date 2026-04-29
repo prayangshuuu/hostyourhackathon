@@ -9,7 +9,7 @@ use Illuminate\View\View;
 
 class SystemController extends Controller
 {
-    public function show(): View
+    public function index(): View
     {
         $settings = [
             'app_name' => config('app.name'),
@@ -22,43 +22,24 @@ class SystemController extends Controller
         return view('admin.settings', compact('settings'));
     }
 
-    public function updateGeneral(Request $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
         $request->validate([
             'app_name' => 'required|string|max:255',
             'app_url' => 'required|url|max:255',
             'support_email' => 'required|email|max:255',
+            'max_upload_size' => 'required|integer|min:1|max:100',
         ]);
 
         $this->updateEnv([
             'APP_NAME' => '"' . $request->app_name . '"',
             'APP_URL' => $request->app_url,
             'MAIL_FROM_ADDRESS' => '"' . $request->support_email . '"',
-        ]);
-
-        return back()->with('success_general', 'General settings updated.');
-    }
-
-    public function updateRegistration(Request $request): RedirectResponse
-    {
-        $this->updateEnv([
             'ALLOW_REGISTRATION' => $request->has('allow_registration') ? 'true' : 'false',
-        ]);
-
-        return back()->with('success_registration', 'Registration settings updated.');
-    }
-
-    public function updateUploads(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'max_upload_size' => 'required|integer|min:1|max:100',
-        ]);
-
-        $this->updateEnv([
             'MAX_UPLOAD_SIZE' => $request->max_upload_size,
         ]);
 
-        return back()->with('success_uploads', 'Upload settings updated.');
+        return back()->with('success', 'Settings updated successfully.');
     }
 
     /**

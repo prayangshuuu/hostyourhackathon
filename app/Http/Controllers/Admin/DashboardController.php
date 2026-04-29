@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function index(): View
     {
         $totalUsers = User::count();
         $totalHackathons = Hackathon::count();

@@ -9,12 +9,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
-class AuthController extends Controller
+class GoogleController extends Controller
 {
     /**
      * Redirect the user to Google's OAuth consent screen.
      */
-    public function redirectToGoogle(): RedirectResponse
+    public function redirect(): RedirectResponse
     {
         return Socialite::driver('google')->redirect();
     }
@@ -26,7 +26,7 @@ class AuthController extends Controller
      * assigns "participant" role for new users, and marks email as
      * verified (OAuth users are trusted).
      */
-    public function handleGoogleCallback(): RedirectResponse
+    public function callback(): RedirectResponse
     {
         $googleUser = Socialite::driver('google')->user();
 

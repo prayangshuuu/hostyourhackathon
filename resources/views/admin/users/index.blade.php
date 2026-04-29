@@ -88,7 +88,7 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="pagination">
-        {!! $users->appends(request()->query())->links('pagination::simple-default') !!}
+    <div class="pagination" style="margin-top: 24px;">
+        {{ $users->appends(request()->query())->links() }}
     </div>
 @endsection

@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\UpdatePasswordRequest;
+use App\Http\Requests\UpdateProfileRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -14,9 +17,9 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function show(Request $request): View
     {
-        return view('profile.edit', [
+        return view('profile.show', [
             'user' => $request->user(),
         ]);
     }
@@ -24,17 +27,44 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(UpdateProfileRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->safe()->only(['name', 'email']));
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            
+            $file = $request->file('avatar');
+            $extension = $file->getClientOriginalExtension();
+            $path = $file->storeAs("avatars/{$user->id}", "avatar.{$extension}", 'public');
+            
+            $user->avatar = $path;
+        }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $user->save();
+
+        return Redirect::route('profile.show')->with('success', 'Profile updated');
+    }
+
+    /**
+     * Update the user's password.
+     */
+    public function updatePassword(UpdatePasswordRequest $request): RedirectResponse
+    {
+        $user = $request->user();
+        
+        $user->update([
+            'password' => Hash::make($request->validated('password')),
+        ]);
+
+        return Redirect::route('profile.show')->with('success_password', 'Password updated');
     }
 
     /**
@@ -49,6 +79,11 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+            // Optionally delete the entire folder: Storage::disk('public')->deleteDirectory("avatars/{$user->id}");
+        }
 
         $user->delete();
 

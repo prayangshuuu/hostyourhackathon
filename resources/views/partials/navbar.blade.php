@@ -27,7 +27,7 @@
                         {{ Auth::user()->name }}
                     </div>
                     <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>
-                    <a href="{{ route('profile.edit') }}" style="display: block; padding: 8px 12px; font-size: 14px; color: var(--text-secondary); text-decoration: none; border-radius: var(--radius-md);" onmouseover="this.style.background='var(--surface-alt)'" onmouseout="this.style.background='transparent'">
+                    <a href="{{ route('profile.show') }}" style="display: block; padding: 8px 12px; font-size: 14px; color: var(--text-secondary); text-decoration: none; border-radius: var(--radius-md);" onmouseover="this.style.background='var(--surface-alt)'" onmouseout="this.style.background='transparent'">
                         Profile
                     </a>
                     <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>

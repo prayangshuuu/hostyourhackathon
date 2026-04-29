@@ -18,7 +18,7 @@ class HackathonStatusController extends Controller
     /**
      * Transition hackathon to the next status.
      */
-    public function __invoke(TransitionHackathonStatusRequest $request, Hackathon $hackathon): RedirectResponse
+    public function update(TransitionHackathonStatusRequest $request, Hackathon $hackathon): RedirectResponse
     {
         $newStatus = HackathonStatus::from($request->validated('status'));
 

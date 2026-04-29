@@ -1,83 +1,40 @@
 <x-guest-layout>
-    <x-slot name="title">Reset Password</x-slot>
+    <x-slot name="title">Set New Password</x-slot>
     <x-slot name="metaDescription">Set a new password for your HostYourHackathon account.</x-slot>
 
-    <x-slot name="heading">Reset your password</x-slot>
-    <x-slot name="subheading">Choose a strong new password for your account.</x-slot>
+    <div style="text-align: center; margin-bottom: 24px;">
+        <a href="{{ route('home') }}" style="display: inline-block; font-size: 24px; font-weight: 700; color: var(--text-primary); text-decoration: none;">
+            HostYourHackathon
+        </a>
+    </div>
 
-    <form method="POST" action="{{ route('password.store') }}" class="space-y-5" id="reset-password-form">
+    <div style="text-align: center; margin-bottom: 28px;">
+        <h1 style="font-size: 20px; font-weight: 600; margin: 0 0 4px 0; color: var(--text-primary);">Set new password</h1>
+    </div>
+
+    <!-- Session Status -->
+    <x-auth-session-status class="mb-4" :status="session('status')" />
+
+    <form method="POST" action="{{ route('password.store') }}" style="display: flex; flex-direction: column; gap: 20px;">
         @csrf
 
         <!-- Password Reset Token -->
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-        <!-- Email Address -->
-        <div>
-            <label for="email" class="block text-sm font-medium text-gray-300">Email address</label>
-            <input
-                id="email"
-                type="email"
-                name="email"
-                value="{{ old('email', $request->email) }}"
-                required
-                autofocus
-                autocomplete="username"
-                class="mt-1.5 block w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-gray-500 shadow-sm transition duration-200 focus:border-indigo-500 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-                placeholder="you@example.com"
-            />
-            @error('email')
-                <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>
-            @enderror
+        <x-input label="Email address" name="email" type="email" value="{{ old('email', $request->email) }}" required readonly style="opacity: 0.7; cursor: not-allowed;" />
+
+        <div style="position: relative;">
+            <x-input label="New Password" name="password" type="password" required autocomplete="new-password" />
+            <button type="button" onclick="const p = document.getElementById('password'); p.type = p.type === 'password' ? 'text' : 'password';" style="position: absolute; right: 12px; top: 32px; width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </button>
         </div>
 
-        <!-- Password -->
-        <div>
-            <label for="password" class="block text-sm font-medium text-gray-300">New password</label>
-            <input
-                id="password"
-                type="password"
-                name="password"
-                required
-                autocomplete="new-password"
-                class="mt-1.5 block w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-gray-500 shadow-sm transition duration-200 focus:border-indigo-500 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-                placeholder="••••••••"
-            />
-            @error('password')
-                <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>
-            @enderror
-        </div>
+        <x-input label="Confirm New Password" name="password_confirmation" type="password" required autocomplete="new-password" />
 
-        <!-- Confirm Password -->
-        <div>
-            <label for="password_confirmation" class="block text-sm font-medium text-gray-300">Confirm new password</label>
-            <input
-                id="password_confirmation"
-                type="password"
-                name="password_confirmation"
-                required
-                autocomplete="new-password"
-                class="mt-1.5 block w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-gray-500 shadow-sm transition duration-200 focus:border-indigo-500 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-                placeholder="••••••••"
-            />
-            @error('password_confirmation')
-                <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Submit -->
-        <button
-            type="submit"
-            id="reset-password-submit"
-            class="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:from-indigo-400 hover:to-purple-500 hover:shadow-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 active:scale-[0.98]"
-        >
-            Reset password
-        </button>
+        <x-button type="submit" variant="primary" style="width: 100%;">Set new password</x-button>
     </form>
-
-    <x-slot name="footer">
-        <p class="text-sm text-gray-500">
-            Remember your password?
-            <a href="{{ route('login') }}" class="font-medium text-indigo-400 transition hover:text-indigo-300">Back to sign in</a>
-        </p>
-    </x-slot>
 </x-guest-layout>

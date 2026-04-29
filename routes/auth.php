@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -36,10 +36,10 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 
     // Google OAuth
-    Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])
+    Route::get('auth/google', [GoogleController::class, 'redirect'])
         ->name('auth.google');
 
-    Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])
+    Route::get('auth/google/callback', [GoogleController::class, 'callback'])
         ->name('auth.google.callback');
 });
 
