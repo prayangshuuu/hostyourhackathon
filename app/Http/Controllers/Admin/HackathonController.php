@@ -55,4 +55,14 @@ class HackathonController extends Controller
             ->route('admin.hackathons.index')
             ->with('success', "Hackathon \"{$hackathon->title}\" restored.");
     }
+
+    public function destroy(Hackathon $hackathon): RedirectResponse
+    {
+        $title = $hackathon->title;
+        $hackathon->delete();
+
+        return redirect()
+            ->route('admin.hackathons.index')
+            ->with('success', "Hackathon \"{$title}\" moved to archived.");
+    }
 }
