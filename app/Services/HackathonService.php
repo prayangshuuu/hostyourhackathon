@@ -14,7 +14,8 @@ class HackathonService
     public function canCreateHackathon(User $user): bool
     {
         // If multiple active hackathons are not allowed, check if they already have one.
-        $allowMultiple = config('app.allow_multiple_hackathons', false);
+        $settings = app(\App\Services\SettingService::class);
+        $allowMultiple = $settings->get('allow_multiple_hackathons', true);
 
         if (! $allowMultiple) {
             $hasActive = Hackathon::where('created_by', $user->id)

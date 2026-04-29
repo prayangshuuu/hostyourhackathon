@@ -20,8 +20,11 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(\App\Services\SettingService $settings): View
     {
+        if (!$settings->get('allow_registration', true)) {
+            abort(403, 'Registration is currently disabled');
+        }
         return view('auth.register');
     }
 
@@ -30,8 +33,11 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, \App\Services\SettingService $settings): RedirectResponse
     {
+        if (!$settings->get('allow_registration', true)) {
+            abort(403, 'Registration is currently disabled');
+        }
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)],
