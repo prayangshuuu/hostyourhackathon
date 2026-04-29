@@ -25,5 +25,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null;
         });
+
+        \Illuminate\Support\Facades\View::composer('layouts.app', function ($view) {
+            $view->with('unreadCount', auth()->user()?->unreadNotifications()->count() ?? 0);
+        });
     }
 }
