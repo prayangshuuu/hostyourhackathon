@@ -16,17 +16,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body style="background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text-primary); margin: 0; padding: 0;">
-    @if(session('impersonating_user_id'))
+    @if(session('impersonating_from'))
         <div style="position: fixed; top: 0; width: 100%; z-index: 200; height: 40px; background: #fef3c7; border-bottom: 1px solid #fde68a; color: #92400e; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
             <div>Impersonating: {{ Auth::user()->name }} ({{ Auth::user()->email }})</div>
             <a href="{{ route('admin.impersonate.exit') }}" style="color: #92400e; text-decoration: underline;">Exit Impersonation</a>
         </div>
     @endif
 
-    <div style="display: grid; grid-template-columns: 240px 1fr; grid-template-rows: 56px 1fr; min-height: 100vh; {{ session('impersonating_user_id') ? 'margin-top: 40px;' : '' }}">
+    <div style="display: grid; grid-template-columns: 240px 1fr; grid-template-rows: 56px 1fr; min-height: 100vh; {{ session('impersonating_from') ? 'margin-top: 40px;' : '' }}">
         
         {{-- Admin Navbar --}}
-        <nav style="grid-column: 1 / -1; grid-row: 1; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: fixed; top: {{ session('impersonating_user_id') ? '40px' : '0' }}; left: 0; width: 100%; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+        <nav style="grid-column: 1 / -1; grid-row: 1; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: fixed; top: {{ session('impersonating_from') ? '40px' : '0' }}; left: 0; width: 100%; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
                     <div style="width: 16px; height: 16px; background: var(--accent); border-radius: 2px;"></div>
@@ -63,7 +63,7 @@
         </nav>
 
         {{-- Admin Sidebar --}}
-        <aside style="grid-column: 1; grid-row: 2; width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: {{ session('impersonating_user_id') ? '96px' : '56px' }}; left: 0; height: calc(100vh - {{ session('impersonating_user_id') ? '96px' : '56px' }}); overflow-y: auto; z-index: 40; padding: 24px 16px;">
+        <aside style="grid-column: 1; grid-row: 2; width: 240px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: {{ session('impersonating_from') ? '96px' : '56px' }}; left: 0; height: calc(100vh - {{ session('impersonating_from') ? '96px' : '56px' }}); overflow-y: auto; z-index: 40; padding: 24px 16px;">
             <div style="display: flex; flex-direction: column; gap: 4px;">
                 <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" style="display: block; padding: 8px 12px; border-radius: var(--radius-md); text-decoration: none; font-size: 14px; font-weight: 500; color: {{ request()->routeIs('admin.dashboard') ? 'var(--accent)' : 'var(--text-secondary)' }}; background: {{ request()->routeIs('admin.dashboard') ? 'var(--accent-light)' : 'transparent' }};">
                     Dashboard

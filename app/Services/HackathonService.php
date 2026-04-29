@@ -13,6 +13,11 @@ class HackathonService
      */
     public function canCreateHackathon(User $user): bool
     {
+        // Super admin always allowed
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
         // If multiple active hackathons are not allowed, check if they already have one.
         $settings = app(\App\Services\SettingService::class);
         $allowMultiple = $settings->get('allow_multiple_hackathons', true);

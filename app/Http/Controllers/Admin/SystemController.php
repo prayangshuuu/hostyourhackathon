@@ -11,15 +11,7 @@ class SystemController extends Controller
 {
     public function index(): View
     {
-        $formData = [
-            'app_name' => config('app.name'),
-            'app_url' => config('app.url'),
-            'support_email' => config('mail.from.address'),
-            'allow_registration' => config('app.allow_registration', true),
-            'max_upload_size' => config('app.max_upload_size', 10),
-        ];
-
-        return view('admin.settings', compact('formData'));
+        return view('admin.settings.index');
     }
 
     public function update(Request $request): RedirectResponse

@@ -1,4 +1,4 @@
-<nav style="height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: fixed; top: 0; left: 0; width: 100%; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
+<nav style="height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: fixed; top: {{ session('impersonating_from') ? '40px' : '0' }}; left: 0; width: 100%; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
     {{-- Left: Logo --}}
     <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
         <div style="width: 16px; height: 16px; background: var(--accent); border-radius: 2px;"></div>

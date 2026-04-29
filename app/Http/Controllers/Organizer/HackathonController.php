@@ -20,17 +20,27 @@ class HackathonController extends Controller
 
     public function index(Request $request): View
     {
-        $hackathons = Hackathon::where('created_by', $request->user()->id)
-            ->withCount(['teams', 'submissions'])
-            ->latest()
-            ->get();
+        $user = $request->user();
+
+        if ($user->hasRole('super_admin')) {
+            $hackathons = Hackathon::withCount(['teams', 'submissions'])
+                ->latest()
+                ->get();
+        } else {
+            $hackathons = Hackathon::where('created_by', $user->id)
+                ->orWhereHas('organizers', fn ($q) => $q->where('user_id', $user->id))
+                ->withCount(['teams', 'submissions'])
+                ->latest()
+                ->get();
+        }
 
         return view('organizer.hackathons.index', compact('hackathons'));
     }
 
     public function create(Request $request): View|RedirectResponse
     {
-        if (! $this->hackathonService->canCreateHackathon($request->user())) {
+        // Super admin bypasses the active hackathon limit
+        if (! $request->user()->hasRole('super_admin') && ! $this->hackathonService->canCreateHackathon($request->user())) {
             return redirect()->route('organizer.hackathons.index')
                 ->with('error', 'You already have an active hackathon. Multiple active hackathons are currently disabled.');
         }
