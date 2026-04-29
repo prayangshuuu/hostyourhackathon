@@ -56,6 +56,16 @@ DB_USERNAME=hostyourhackathon
 DB_PASSWORD=your_password
 ```
 
+## Features
+
+- **Hackathon management** with full CRUD and status transitions (draft → published → ongoing → ended → archived)
+- **Multi-segment support** for organizing hackathon tracks/categories
+- **Co-organizer assignment** — invite team members by email to help manage events
+- **Role-based access control** with organizer, participant, judge, mentor, and super admin roles
+- **Google OAuth** social login with Laravel Socialite
+- **Email verification** and password reset flows
+
 ## License
 
 Open-source software.
+
