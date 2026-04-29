@@ -21,17 +21,17 @@
 
             <div class="form-group">
                 <label for="app_name" class="form-label">App Name</label>
-                <input type="text" name="app_name" id="app_name" class="form-input" value="{{ old('app_name', $settings['app_name']) }}" required>
+                <input type="text" name="app_name" id="app_name" class="form-input" value="{{ old('app_name', $formData['app_name']) }}" required>
                 @error('app_name') <p class="form-error">{{ $message }}</p> @enderror
             </div>
             <div class="form-group">
                 <label for="app_url" class="form-label">App URL</label>
-                <input type="url" name="app_url" id="app_url" class="form-input" value="{{ old('app_url', $settings['app_url']) }}" required>
+                <input type="url" name="app_url" id="app_url" class="form-input" value="{{ old('app_url', $formData['app_url']) }}" required>
                 @error('app_url') <p class="form-error">{{ $message }}</p> @enderror
             </div>
             <div class="form-group">
                 <label for="support_email" class="form-label">Support Email</label>
-                <input type="email" name="support_email" id="support_email" class="form-input" value="{{ old('support_email', $settings['support_email']) }}" required>
+                <input type="email" name="support_email" id="support_email" class="form-input" value="{{ old('support_email', $formData['support_email']) }}" required>
                 @error('support_email') <p class="form-error">{{ $message }}</p> @enderror
             </div>
         </div>
@@ -42,7 +42,7 @@
             <div class="form-group" style="margin-bottom: 24px;">
                 <label class="form-label" style="margin-bottom:8px;">Allow Public Registration</label>
                 <label class="toggle-switch">
-                    <input type="checkbox" name="allow_registration" {{ old('allow_registration', $settings['allow_registration']) ? 'checked' : '' }}>
+                    <input type="checkbox" name="allow_registration" {{ old('allow_registration', $formData['allow_registration']) ? 'checked' : '' }}>
                     <div class="toggle-track">
                         <div class="toggle-thumb"></div>
                     </div>
@@ -51,7 +51,7 @@
             
             <div class="form-group">
                 <label for="max_upload_size" class="form-label">Max File Upload Size (MB)</label>
-                <input type="number" name="max_upload_size" id="max_upload_size" class="form-input" value="{{ old('max_upload_size', $settings['max_upload_size']) }}" min="1" max="100" required style="width:160px;">
+                <input type="number" name="max_upload_size" id="max_upload_size" class="form-input" value="{{ old('max_upload_size', $formData['max_upload_size']) }}" min="1" max="100" required style="width:160px;">
                 @error('max_upload_size') <p class="form-error">{{ $message }}</p> @enderror
             </div>
         </div>
