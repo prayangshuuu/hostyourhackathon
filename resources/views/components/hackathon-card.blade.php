@@ -1,38 +1,82 @@
 {{-- Hackathon Card Component --}}
 @props(['hackathon'])
 
-<a href="{{ route('hackathons.show', $hackathon) }}" class="hackathon-card">
+<a href="{{ route('hackathons.show', $hackathon) }}" style="
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 150ms ease;
+    text-decoration: none;
+    color: inherit;
+" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+    {{-- Banner --}}
     @if ($hackathon->banner)
-        <img src="{{ Storage::url($hackathon->banner) }}" alt="{{ $hackathon->title }}" class="hackathon-card-banner">
+        <img src="{{ Storage::url($hackathon->banner) }}" alt="{{ $hackathon->title }}" style="
+            width: 100%; height: 120px; object-fit: cover; display: block;
+        ">
     @else
-        <div class="hackathon-card-banner" style="display:flex; align-items:center; justify-content:center; color:var(--color-text-muted);">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M3 16l5-5 4 4 3-3 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="
+            width: 100%; height: 120px; background: var(--accent-light);
+            display: flex; align-items: center; justify-content: center; color: var(--accent);
+        ">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M3 16l5-5 4 4 3-3 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
     @endif
-    <div class="hackathon-card-content">
+
+    {{-- Body --}}
+    <div style="padding: 16px 20px 20px; flex: 1; display: flex; flex-direction: column;">
+        {{-- Logo --}}
         @if ($hackathon->logo)
-            <img src="{{ Storage::url($hackathon->logo) }}" alt="" class="hackathon-card-logo">
+            <img src="{{ Storage::url($hackathon->logo) }}" alt="" style="
+                width: 36px; height: 36px; border-radius: var(--radius-md);
+                border: 1px solid var(--border); object-fit: cover;
+                margin-top: -34px; position: relative; background: var(--surface); margin-bottom: 10px;
+            ">
         @else
-            <div class="hackathon-card-logo" style="display:flex; align-items:center; justify-content:center; font-size:var(--font-size-sm); font-weight:var(--font-weight-semibold); color:var(--color-accent);">
+            <div style="
+                width: 36px; height: 36px; border-radius: var(--radius-md);
+                border: 1px solid var(--border); background: var(--surface);
+                margin-top: -34px; position: relative; margin-bottom: 10px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 14px; font-weight: 600; color: var(--accent);
+            ">
                 {{ strtoupper(substr($hackathon->title, 0, 1)) }}
             </div>
         @endif
-        <div class="hackathon-card-title">{{ $hackathon->title }}</div>
-        <div class="hackathon-card-tagline">{{ $hackathon->tagline }}</div>
-        <div class="hackathon-card-footer">
+
+        {{-- Title --}}
+        <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">{{ $hackathon->title }}</div>
+
+        {{-- Tagline --}}
+        <div style="
+            font-size: 13px; color: var(--text-muted); margin-top: 4px; flex: 1;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        ">{{ $hackathon->tagline ?? Str::limit($hackathon->description, 80) }}</div>
+
+        {{-- Footer --}}
+        <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between;">
             @php
-                $statusClass = match($hackathon->status->value) {
-                    'draft' => 'badge-partial',
-                    'published' => 'badge-scored',
-                    'ongoing' => 'badge-pending',
-                    'ended' => 'badge-partial',
-                    'archived' => 'badge-partial',
-                    default => 'badge-partial',
+                $badgeVariant = match($hackathon->status->value) {
+                    'published' => 'info',
+                    'ongoing' => 'success',
+                    'ended' => 'neutral',
+                    'draft' => 'neutral',
+                    'archived' => 'neutral',
+                    default => 'neutral',
                 };
             @endphp
-            <span class="badge {{ $statusClass }}">{{ ucfirst($hackathon->status->value) }}</span>
+            <x-badge :variant="$badgeVariant">{{ ucfirst($hackathon->status->value) }}</x-badge>
+
             @if ($hackathon->registration_closes_at && $hackathon->registration_closes_at->isFuture())
-                <span class="hackathon-card-deadline">Reg. closes {{ $hackathon->registration_closes_at->format('M d') }}</span>
+                <span style="font-size: 12px; color: var(--text-muted);">Reg. closes {{ $hackathon->registration_closes_at->format('M d') }}</span>
+            @elseif ($hackathon->submission_opens_at && $hackathon->submission_opens_at->isFuture())
+                <span style="font-size: 12px; color: var(--text-muted);">Submissions open</span>
             @endif
         </div>
     </div>

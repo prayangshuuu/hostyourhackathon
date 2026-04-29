@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Notification routes (auth)
@@ -128,8 +129,10 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])
         Route::post('hackathons/{hackathon}/restore', [AdminHackathonController::class, 'restore'])->name('hackathons.restore');
         Route::resource('hackathons', AdminHackathonController::class)->names('hackathons');
         
-        Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings');
+        Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
         Route::post('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+        Route::post('settings/clear-cache', [AdminSettingsController::class, 'clearCache'])->name('settings.clear-cache');
+        Route::post('settings/test-email', [AdminSettingsController::class, 'testEmail'])->name('settings.test-email');
     });
 
 require __DIR__.'/auth.php';

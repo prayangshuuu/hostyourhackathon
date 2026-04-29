@@ -61,4 +61,29 @@ class SystemController extends Controller
 
         file_put_contents($envPath, $envContent);
     }
+
+    /**
+     * Clear application cache.
+     */
+    public function clearCache(): \Illuminate\Http\JsonResponse
+    {
+        \Artisan::call('optimize:clear');
+        return response()->json(['message' => 'Cache cleared successfully.']);
+    }
+
+    /**
+     * Send test email to admin.
+     */
+    public function testEmail(Request $request): \Illuminate\Http\JsonResponse
+    {
+        try {
+            \Illuminate\Support\Facades\Mail::raw('This is a test email from ' . config('app.name'), function ($message) use ($request) {
+                $message->to($request->user()->email)
+                    ->subject('Test Email — ' . config('app.name'));
+            });
+            return response()->json(['message' => 'Test email sent successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to send test email: ' . $e->getMessage()], 500);
+        }
+    }
 }

@@ -2,25 +2,6 @@
 
 namespace App\Http\Controllers;
 
-/**
- * @OA\Info(
- *      version="1.0.0",
- *      title="HostYourHackathon API",
- *      description="REST API documentation for HostYourHackathon platform"
- * )
- *
- * @OA\Server(
- *      url=L5_SWAGGER_CONST_HOST,
- *      description="Demo API Server"
- * )
- *
- * @OA\SecurityScheme(
- *      securityScheme="bearerAuth",
- *      type="http",
- *      scheme="bearer",
- *      bearerFormat="JWT"
- * )
- */
 abstract class Controller
 {
     //

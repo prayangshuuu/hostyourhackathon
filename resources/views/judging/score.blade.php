@@ -7,7 +7,7 @@
     {{-- Page Header --}}
     <div class="page-header">
         <div class="page-header-breadcrumb">
-            <a href="{{ route('judging.dashboard') }}">Dashboard</a>
+            <a href="{{ route('judge.dashboard') }}">Dashboard</a>
             <span class="separator">/</span>
             <span>{{ $submission->team->name }}</span>
             <span class="separator">/</span>
@@ -91,7 +91,7 @@
             <div class="card" style="position:sticky; top:32px;">
                 <p class="text-card-title" style="margin-bottom:16px;">Scoring</p>
 
-                <form method="POST" action="{{ route('judging.score.store', $submission) }}" id="form-score">
+                <form method="POST" action="{{ route('judge.score.store', $submission) }}" id="form-score">
                     @csrf
 
                     @foreach ($criteria as $criterion)
