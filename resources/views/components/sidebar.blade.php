@@ -40,8 +40,14 @@
     <nav style="display: flex; flex-direction: column; gap: 4px;">
         @foreach ($navItems as $item)
             @php
-                // Prevent RouteNotFoundException if route doesn't exist yet
-                $href = Route::has($item['route']) ? route($item['route']) : '#';
+                $href = '#';
+                if (Route::has($item['route'])) {
+                    try {
+                        $href = route($item['route'], request()->route()->parameters());
+                    } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
+                        $href = '#';
+                    }
+                }
                 $isActive = Route::has($item['route']) ? request()->routeIs($item['route'].'*') : false;
             @endphp
             <a href="{{ $href }}" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: {{ $isActive ? 'var(--accent)' : 'var(--text-secondary)' }}; background: {{ $isActive ? 'var(--accent-light)' : 'transparent' }}; text-decoration: none;" onmouseover="if(!{{ $isActive ? 'true' : 'false' }}) { this.style.background='var(--surface-alt)'; this.style.color='var(--text-primary)'; }" onmouseout="if(!{{ $isActive ? 'true' : 'false' }}) { this.style.background='transparent'; this.style.color='var(--text-secondary)'; }">
