@@ -67,6 +67,12 @@ DB_PASSWORD=your_password
 - **Role-based access control** with organizer, participant, judge, mentor, and super admin roles
 - **Google OAuth** social login with Laravel Socialite
 - **Email verification** and password reset flows
+- **Draft and final idea submission** — save progress, finalize when ready
+- **Time-gated submission window** with live countdown timer
+- **File uploads** — PDF, PPT, PPTX with configurable size limits
+- **Scoring rubric builder** — define criteria with max scores per hackathon
+- **Segment-based judge assignment** — assign judges to specific tracks
+- **Leaderboard with visibility control** — public/private toggle, ranked results
 
 ## License
 

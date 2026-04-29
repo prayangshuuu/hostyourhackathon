@@ -62,4 +62,43 @@ class Submission extends Model
     {
         return $this->hasMany(Score::class);
     }
+
+    // ───────────────────────────────────────────
+    // Helpers
+    // ───────────────────────────────────────────
+
+    /**
+     * Check if the submission window is currently open.
+     */
+    public function isWindowOpen(): bool
+    {
+        $hackathon = $this->hackathon;
+        $now = now();
+
+        if ($hackathon->submission_opens_at && $now->lt($hackathon->submission_opens_at)) {
+            return false;
+        }
+
+        if ($hackathon->submission_closes_at && $now->gt($hackathon->submission_closes_at)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if the submission can be edited (draft + window open).
+     */
+    public function isEditable(): bool
+    {
+        return $this->is_draft && $this->isWindowOpen();
+    }
+
+    /**
+     * Check if the submission has been finalized.
+     */
+    public function isFinal(): bool
+    {
+        return ! $this->is_draft && $this->submitted_at !== null;
+    }
 }

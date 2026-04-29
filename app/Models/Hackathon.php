@@ -35,6 +35,8 @@ class Hackathon extends Model
         'registration_closes_at',
         'submission_opens_at',
         'submission_closes_at',
+        're_open_submission',
+        'leaderboard_public',
         'results_at',
         'created_by',
     ];
@@ -55,6 +57,8 @@ class Hackathon extends Model
             'registration_closes_at' => 'datetime',
             'submission_opens_at' => 'datetime',
             'submission_closes_at' => 'datetime',
+            're_open_submission' => 'boolean',
+            'leaderboard_public' => 'boolean',
             'results_at' => 'datetime',
         ];
     }

@@ -18,7 +18,18 @@ class SubmissionFile extends Model
         'file_path',
         'file_type',
         'original_name',
+        'file_size',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'file_size' => 'integer',
+        ];
+    }
 
     // ───────────────────────────────────────────
     // Relationships

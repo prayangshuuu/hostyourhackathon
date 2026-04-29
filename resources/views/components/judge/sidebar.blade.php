@@ -1,8 +1,8 @@
-{{-- Participant Sidebar --}}
-<aside class="sidebar" role="navigation" aria-label="Participant navigation">
+{{-- Judge Sidebar --}}
+<aside class="sidebar" role="navigation" aria-label="Judge navigation">
     {{-- Logo --}}
     <div class="sidebar-logo">
-        <a href="{{ route('dashboard') }}" style="text-decoration:none; display:flex; align-items:center; gap:10px;">
+        <a href="{{ route('judging.dashboard') }}" style="text-decoration:none; display:flex; align-items:center; gap:10px;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="24" height="24" rx="6" fill="var(--color-accent)"/>
                 <path d="M7 12h10M12 7v10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
@@ -15,26 +15,12 @@
 
     {{-- Navigation --}}
     <nav>
-        <div class="sidebar-section-label">General</div>
+        <div class="sidebar-section-label">Judging</div>
 
-        <a href="{{ route('dashboard') }}"
-           class="sidebar-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        <a href="{{ route('judging.dashboard') }}"
+           class="sidebar-nav-item {{ request()->routeIs('judging.dashboard') ? 'active' : '' }}">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h5.333v5.333H2V2Zm6.667 0H14v3.333H8.667V2ZM2 9.333h5.333V14H2V9.333Zm6.667-1.333H14V14H8.667V8Z" fill="currentColor"/></svg>
             Dashboard
-        </a>
-
-        <div class="sidebar-section-label">Participate</div>
-
-        <a href="{{ route('teams.index') }}"
-           class="sidebar-nav-item {{ request()->routeIs('teams.*') ? 'active' : '' }}">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 7.333A2.667 2.667 0 1 0 6 2a2.667 2.667 0 0 0 0 5.333ZM2 13.333v-.666A3.333 3.333 0 0 1 5.333 9.333h1.334A3.333 3.333 0 0 1 10 12.667v.666M10.667 2.133a2.667 2.667 0 0 1 0 5.067M14 13.333v-.666a3.333 3.333 0 0 0-2.667-3.254" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            My Teams
-        </a>
-
-        <a href="#"
-           class="sidebar-nav-item {{ request()->routeIs('submissions.*') ? 'active' : '' }}">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9.333 1.333H4A1.333 1.333 0 0 0 2.667 2.667v10.666A1.333 1.333 0 0 0 4 14.667h8a1.333 1.333 0 0 0 1.333-1.334V5.333l-4-4Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.333 1.333v4h4M10.667 8.667H5.333M10.667 11.333H5.333M6.667 6H5.333" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Submissions
         </a>
     </nav>
 
