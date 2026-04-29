@@ -1,17 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Swagger;
 
 /**
  * @OA\Info(
  *      version="1.0.0",
  *      title="HostYourHackathon API",
  *      description="REST API documentation for HostYourHackathon platform"
- * )
- *
- * @OA\Server(
- *      url=L5_SWAGGER_CONST_HOST,
- *      description="Demo API Server"
  * )
  *
  * @OA\SecurityScheme(
@@ -21,7 +16,6 @@ namespace App\Http\Controllers;
  *      bearerFormat="JWT"
  * )
  */
-abstract class Controller
+class SwaggerAnnotations
 {
-    //
 }

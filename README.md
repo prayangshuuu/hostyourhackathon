@@ -81,6 +81,52 @@ DB_PASSWORD=your_password
 - **Super admin panel with user and hackathon oversight** — role management, force delete, restore
 - **System settings** — env-level configuration for app, registration, uploads
 - **User impersonation** — session-based, banner-indicated, one-click exit
+- **REST API (v1)** — comprehensive JSON API for headless integrations
+- **Sanctum Authentication** — token-based auth for mobile/external apps
+- **OpenAPI Documentation** — interactive Swagger UI at `/api/documentation`
+
+## REST API Documentation
+
+HostYourHackathon provides a comprehensive JSON REST API, authenticated via Laravel Sanctum tokens.
+
+The interactive OpenAPI (Swagger) documentation is available automatically once you serve the application:
+`http://127.0.0.1:8000/api/documentation`
+
+All API responses follow a standardized format:
+
+**Success Response:**
+```json
+{
+    "success": true,
+    "data": { ... },
+    "message": "Success message"
+}
+```
+
+**Error Response:**
+```json
+{
+    "success": false,
+    "message": "Error description",
+    "errors": {
+        "field": ["Validation message"]
+    }
+}
+```
+
+**Paginated Response:**
+```json
+{
+    "success": true,
+    "data": [ ... ],
+    "meta": {
+        "current_page": 1,
+        "last_page": 5,
+        "per_page": 15,
+        "total": 75
+    }
+}
+```
 
 ## License
 
