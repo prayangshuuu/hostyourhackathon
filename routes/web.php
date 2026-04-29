@@ -124,7 +124,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])
         Route::resource('users', AdminUserController::class)->names('users');
         Route::post('users/{user}/restore', [AdminUserController::class, 'restore'])->name('users.restore');
         Route::post('users/{user}/impersonate', [AdminUserController::class, 'impersonate'])->name('users.impersonate');
-        Route::get('impersonate/exit', [AdminUserController::class, 'stopImpersonation'])->name('impersonate.exit');
+
         
         Route::delete('hackathons/{hackathon}/force', [AdminHackathonController::class, 'forceDelete'])->name('hackathons.force-delete');
         Route::post('hackathons/{hackathon}/restore', [AdminHackathonController::class, 'restore'])->name('hackathons.restore');
@@ -135,5 +135,10 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])
         Route::post('settings/clear-cache', [AdminSettingsController::class, 'clearCache'])->name('settings.clear-cache');
         Route::post('settings/test-email', [AdminSettingsController::class, 'testEmail'])->name('settings.test-email');
     });
+
+// Impersonation exit must be accessible by any authenticated user who is currently impersonating
+Route::get('admin/impersonate/exit', [AdminUserController::class, 'stopImpersonation'])
+    ->middleware(['auth'])
+    ->name('admin.impersonate.exit');
 
 require __DIR__.'/auth.php';
