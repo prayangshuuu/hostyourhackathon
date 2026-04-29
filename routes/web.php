@@ -122,8 +122,9 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         
         Route::resource('users', AdminUserController::class)->names('users');
+        Route::post('users/{user}/restore', [AdminUserController::class, 'restore'])->name('users.restore');
         Route::get('users/{user}/impersonate', [AdminUserController::class, 'impersonate'])->name('users.impersonate');
-        Route::get('impersonate/exit', [AdminUserController::class, 'exitImpersonate'])->name('impersonate.exit');
+        Route::get('impersonate/exit', [AdminUserController::class, 'stopImpersonation'])->name('impersonate.exit');
         
         Route::delete('hackathons/{hackathon}/force', [AdminHackathonController::class, 'forceDelete'])->name('hackathons.force-delete');
         Route::post('hackathons/{hackathon}/restore', [AdminHackathonController::class, 'restore'])->name('hackathons.restore');

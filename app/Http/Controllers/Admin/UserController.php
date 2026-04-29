@@ -70,6 +70,19 @@ class UserController extends Controller
     }
 
     /**
+     * Restore a soft-deleted user.
+     */
+    public function restore(int $id): RedirectResponse
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        $user->restore();
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', "User {$user->name} restored.");
+    }
+
+    /**
      * Start impersonating a user.
      */
     public function impersonate(User $user): RedirectResponse
