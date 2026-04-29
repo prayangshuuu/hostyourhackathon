@@ -15,15 +15,19 @@ class PublicController extends Controller
      */
     public function home(): View
     {
-        $hackathons = Cache::remember('public.hackathons.upcoming', 300, function () {
+        $hackathonsData = Cache::remember('public.hackathons.upcoming', 300, function () {
             return Hackathon::whereIn('status', [
                 HackathonStatus::Published,
                 HackathonStatus::Ongoing,
             ])
                 ->latest('registration_opens_at')
                 ->take(6)
-                ->get();
+                ->get()
+                ->map->getAttributes()
+                ->all();
         });
+
+        $hackathons = Hackathon::hydrate($hackathonsData);
 
         return view('public.home', compact('hackathons'));
     }
@@ -33,15 +37,19 @@ class PublicController extends Controller
      */
     public function index(): View
     {
-        $hackathons = Cache::remember('public.hackathons.all', 300, function () {
+        $hackathonsData = Cache::remember('public.hackathons.all', 300, function () {
             return Hackathon::whereIn('status', [
                 HackathonStatus::Published,
                 HackathonStatus::Ongoing,
                 HackathonStatus::Ended,
             ])
                 ->latest('registration_opens_at')
-                ->get();
+                ->get()
+                ->map->getAttributes()
+                ->all();
         });
+
+        $hackathons = Hackathon::hydrate($hackathonsData);
 
         return view('public.hackathons.index', compact('hackathons'));
     }
