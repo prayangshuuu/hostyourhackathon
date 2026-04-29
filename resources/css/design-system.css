@@ -1086,3 +1086,222 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }
+
+/* ── Notification Bell ───────────────────────────────────────── */
+.notification-bell {
+  position: relative;
+  display: inline-flex;
+}
+.notification-bell-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+.notification-bell-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-surface-raised);
+}
+.notification-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.notification-bell-badge:empty,
+.notification-bell-badge[data-count="0"] {
+  display: none;
+}
+.notification-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  width: 320px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  z-index: 100;
+  display: none;
+}
+.notification-dropdown.is-open {
+  display: block;
+}
+.notification-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.notification-dropdown-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+.notification-mark-read {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.notification-mark-read:hover {
+  text-decoration: underline;
+}
+.notification-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-sm);
+  transition: background var(--transition-fast);
+}
+.notification-item:last-child {
+  border-bottom: none;
+}
+.notification-item-unread {
+  background: var(--color-accent-subtle);
+  border-left: 2px solid var(--color-accent);
+}
+.notification-item-read {
+  background: var(--color-surface);
+}
+.notification-item-message {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+.notification-item-time {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  margin-top: 2px;
+}
+.notification-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ── Announcement Card (participant) ─────────────────────────── */
+.announcement-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  transition: border-color var(--transition-fast);
+}
+.announcement-card:hover {
+  border-color: var(--color-border-hover);
+}
+.announcement-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.announcement-card-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.announcement-card-date {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.announcement-card-body {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-base);
+}
+.announcement-read-more {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+.announcement-read-more:hover {
+  text-decoration: underline;
+}
+
+/* ── Announcement Meta Row ───────────────────────────────────── */
+.announcement-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+/* ── Empty State ─────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+}
+.empty-state-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  color: var(--color-text-muted);
+}
+.empty-state-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+
+/* ── Visibility Badges ───────────────────────────────────────── */
+.badge-visibility-all {
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+.badge-visibility-registered {
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+.badge-visibility-segment {
+  background: rgba(245, 158, 11, 0.08);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* ── Announcement Full Body ──────────────────────────────────── */
+.announcement-full-body {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-relaxed);
+  padding: 32px;
+}
+.announcement-full-body p {
+  margin-bottom: 12px;
+}
+.announcement-full-body a {
+  color: var(--color-accent);
+}

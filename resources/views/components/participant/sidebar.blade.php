@@ -36,6 +36,12 @@
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9.333 1.333H4A1.333 1.333 0 0 0 2.667 2.667v10.666A1.333 1.333 0 0 0 4 14.667h8a1.333 1.333 0 0 0 1.333-1.334V5.333l-4-4Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.333 1.333v4h4M10.667 8.667H5.333M10.667 11.333H5.333M6.667 6H5.333" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Submissions
         </a>
+
+        <a href="#"
+           class="sidebar-nav-item {{ request()->routeIs('participant.announcements.*') ? 'active' : '' }}">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 5.333A4 4 0 0 0 4 5.333c0 4.667-2 6-2 6h12s-2-1.333-2-6ZM9.153 14a1.333 1.333 0 0 1-2.306 0" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Announcements
+        </a>
     </nav>
 
     {{-- User section at bottom --}}

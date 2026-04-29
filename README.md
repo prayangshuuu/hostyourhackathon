@@ -73,6 +73,8 @@ DB_PASSWORD=your_password
 - **Scoring rubric builder** — define criteria with max scores per hackathon
 - **Segment-based judge assignment** — assign judges to specific tracks
 - **Leaderboard with visibility control** — public/private toggle, ranked results
+- **Announcements with visibility control and scheduling** — all, registered, or segment-targeted
+- **In-app notification bell with unread count** — real-time dropdown with mark-all-read
 
 ## License
 

@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\Judge\ScoreController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Organizer\AnnouncementController;
 use App\Http\Controllers\Organizer\HackathonController;
 use App\Http\Controllers\Organizer\HackathonStatusController;
 use App\Http\Controllers\Organizer\JudgeAssignmentController;
 use App\Http\Controllers\Organizer\ScoringCriteriaController;
 use App\Http\Controllers\Organizer\SegmentController;
+use App\Http\Controllers\Participant\ParticipantAnnouncementController;
 use App\Http\Controllers\Participant\SubmissionController;
 use App\Http\Controllers\Participant\SubmissionFileController;
 use App\Http\Controllers\Participant\TeamController;
@@ -27,6 +30,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // ── Notifications ────────────────────────────────────────────
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])
+        ->name('notifications.markAllRead');
 });
 
 // ── Organizer Routes ─────────────────────────────────────────────
@@ -69,6 +76,10 @@ Route::middleware(['auth', 'verified', 'role:organizer|super_admin'])
             ->name('hackathons.judges.store');
         Route::delete('hackathons/{hackathon}/judges/{judge}', [JudgeAssignmentController::class, 'destroy'])
             ->name('hackathons.judges.destroy');
+
+        // ── Announcements ────────────────────────────────────────────
+        Route::resource('hackathons.announcements', AnnouncementController::class)
+            ->except(['show']);
     });
 
 // ── Judge Routes ─────────────────────────────────────────────────
@@ -107,6 +118,12 @@ Route::middleware(['auth', 'verified', 'role:participant|super_admin'])
         // ── Submission Files ─────────────────────────────────────────
         Route::post('submissions/{submission}/files', [SubmissionFileController::class, 'store'])->name('submissions.files.store');
         Route::delete('submission-files/{submissionFile}', [SubmissionFileController::class, 'destroy'])->name('submissions.files.destroy');
+
+        // ── Participant Announcements ────────────────────────────────
+        Route::get('hackathons/{hackathon}/announcements', [ParticipantAnnouncementController::class, 'index'])
+            ->name('participant.announcements.index');
+        Route::get('hackathons/{hackathon}/announcements/{announcement}', [ParticipantAnnouncementController::class, 'show'])
+            ->name('participant.announcements.show');
     });
 
 // ── Leaderboard (any authenticated user) ─────────────────────────

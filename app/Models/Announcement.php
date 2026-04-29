@@ -56,4 +56,44 @@ class Announcement extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    // ───────────────────────────────────────────
+    // Helpers
+    // ───────────────────────────────────────────
+
+    /**
+     * Check if the announcement has been published.
+     */
+    public function isPublished(): bool
+    {
+        return $this->published_at !== null
+            && $this->published_at->lte(now());
+    }
+
+    /**
+     * Check if the announcement is scheduled for the future.
+     */
+    public function isScheduled(): bool
+    {
+        return $this->published_at !== null
+            && $this->published_at->gt(now());
+    }
+
+    /**
+     * Check if the announcement is still a draft.
+     */
+    public function isDraft(): bool
+    {
+        return $this->published_at === null;
+    }
+
+    /**
+     * Get the status label.
+     */
+    public function getStatusAttribute(): string
+    {
+        if ($this->isDraft()) return 'draft';
+        if ($this->isScheduled()) return 'scheduled';
+        return 'published';
+    }
 }

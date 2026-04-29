@@ -24,6 +24,11 @@
     <div class="main-content">
         <div class="main-content-inner">
 
+            {{-- Top Bar with Notification Bell --}}
+            <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+                @include('components.notification-bell')
+            </div>
+
             {{-- Flash Messages --}}
             @if (session('success'))
                 <div class="alert alert-success" id="flash-success" role="alert">

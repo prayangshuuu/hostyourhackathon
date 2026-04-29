@@ -1,0 +1,136 @@
+@extends('layouts.organizer')
+
+@section('title', 'Edit Announcement')
+@section('meta_description', 'Edit announcement: ' . $announcement->title)
+
+@section('content')
+    {{-- Page Header --}}
+    <div class="page-header">
+        <div class="page-header-breadcrumb">
+            <a href="{{ route('organizer.hackathons.index') }}">Hackathons</a>
+            <span class="separator">/</span>
+            <a href="{{ route('organizer.hackathons.show', $hackathon) }}">{{ $hackathon->title }}</a>
+            <span class="separator">/</span>
+            <a href="{{ route('organizer.hackathons.announcements.index', $hackathon) }}">Announcements</a>
+            <span class="separator">/</span>
+            <span>Edit</span>
+        </div>
+        <div class="page-header-row">
+            <h1 class="text-page-title">Edit Announcement</h1>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ route('organizer.hackathons.announcements.update', [$hackathon, $announcement]) }}" id="form-announcement">
+        @csrf
+        @method('PUT')
+
+        <div class="content-grid-8-4">
+            {{-- Left Column: Form --}}
+            <div class="card">
+                <div class="form-group">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" name="title" id="title"
+                           class="form-input @error('title') is-invalid @enderror"
+                           value="{{ old('title', $announcement->title) }}"
+                           placeholder="Announcement title" required>
+                    @error('title') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="body" class="form-label">Body</label>
+                    <textarea name="body" id="body"
+                              class="form-textarea @error('body') is-invalid @enderror"
+                              style="min-height:200px;"
+                              placeholder="Write your announcement…"
+                              required>{{ old('body', $announcement->body) }}</textarea>
+                    @error('body') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="visibility" class="form-label">Visibility</label>
+                        <select name="visibility" id="visibility" class="form-select @error('visibility') is-invalid @enderror" required>
+                            <option value="all" {{ old('visibility', $announcement->visibility->value) === 'all' ? 'selected' : '' }}>All</option>
+                            <option value="registered" {{ old('visibility', $announcement->visibility->value) === 'registered' ? 'selected' : '' }}>Registered Participants</option>
+                            <option value="segment" {{ old('visibility', $announcement->visibility->value) === 'segment' ? 'selected' : '' }}>Specific Segment</option>
+                        </select>
+                        @error('visibility') <p class="form-error">{{ $message }}</p> @enderror
+                    </div>
+
+                    @php
+                        $showSegment = old('visibility', $announcement->visibility->value) === 'segment';
+                    @endphp
+                    <div class="form-group" id="segment-group" style="{{ $showSegment ? '' : 'display:none;' }}">
+                        <label for="segment_id" class="form-label">Segment</label>
+                        <select name="segment_id" id="segment_id" class="form-select @error('segment_id') is-invalid @enderror">
+                            <option value="">Select a segment</option>
+                            @foreach ($hackathon->segments as $segment)
+                                <option value="{{ $segment->id }}" {{ old('segment_id', $announcement->segment_id) == $segment->id ? 'selected' : '' }}>
+                                    {{ $segment->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('segment_id') <p class="form-error">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduled_at" class="form-label">Schedule For (optional)</label>
+                    <input type="datetime-local" name="scheduled_at" id="scheduled_at"
+                           class="form-input @error('scheduled_at') is-invalid @enderror"
+                           value="{{ old('scheduled_at', $announcement->scheduled_at?->format('Y-m-d\TH:i')) }}">
+                    @error('scheduled_at') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            {{-- Right Column: Publishing Sidebar --}}
+            <div>
+                <div class="card" style="position:sticky; top:32px;">
+                    <p class="text-card-title" style="margin-bottom:16px;">Publishing</p>
+
+                    @php
+                        $status = $announcement->status;
+                        $statusClass = match($status) {
+                            'draft' => 'badge-partial',
+                            'scheduled' => 'badge-pending',
+                            'published' => 'badge-scored',
+                        };
+                    @endphp
+                    <div style="margin-bottom:16px;">
+                        <span class="badge {{ $statusClass }}">{{ ucfirst($status) }}</span>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        @if ($announcement->isDraft())
+                            <button type="submit" name="publish" value="1" class="btn btn-primary" style="width:100%;" id="btn-publish">
+                                Publish
+                            </button>
+                        @endif
+                        <button type="submit" class="btn btn-secondary" style="width:100%;" id="btn-save-draft">
+                            Save {{ $announcement->isDraft() ? 'Draft' : 'Changes' }}
+                        </button>
+                    </div>
+
+                    @if ($announcement->scheduled_at && $announcement->isDraft())
+                        <p class="text-helper" style="margin-top:12px;">
+                            Scheduled for {{ $announcement->scheduled_at->format('M d, Y · h:i A') }}.
+                        </p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </form>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const visibilitySelect = document.getElementById('visibility');
+            const segmentGroup = document.getElementById('segment-group');
+
+            visibilitySelect.addEventListener('change', function () {
+                segmentGroup.style.display = this.value === 'segment' ? '' : 'none';
+            });
+        });
+    </script>
+    @endpush
+@endsection
