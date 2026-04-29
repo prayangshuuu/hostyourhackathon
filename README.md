@@ -61,6 +61,9 @@ DB_PASSWORD=your_password
 - **Hackathon management** with full CRUD and status transitions (draft → published → ongoing → ended → archived)
 - **Multi-segment support** for organizing hackathon tracks/categories
 - **Co-organizer assignment** — invite team members by email to help manage events
+- **Team registration with invite links** — create teams, share invite codes, join via link
+- **Window-based registration enforcement** — registration open/close dates from hackathon settings
+- **Team size and solo participation rules** — min/max team size, allow_solo toggle
 - **Role-based access control** with organizer, participant, judge, mentor, and super admin roles
 - **Google OAuth** social login with Laravel Socialite
 - **Email verification** and password reset flows
