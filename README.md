@@ -75,6 +75,9 @@ DB_PASSWORD=your_password
 - **Leaderboard with visibility control** — public/private toggle, ranked results
 - **Announcements with visibility control and scheduling** — all, registered, or segment-targeted
 - **In-app notification bell with unread count** — real-time dropdown with mark-all-read
+- **Public hackathon discovery with filtering** — cached listing, pill filters, search
+- **Full hackathon detail page with tabbed sections** — About, Timeline, Rules, Prizes, Sponsors, FAQs
+- **Participant dashboard with deadlines and announcement feed** — stat cards, timeline, 3-col announcements
 
 ## License
 

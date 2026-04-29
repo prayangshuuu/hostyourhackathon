@@ -41,6 +41,10 @@
            class="sidebar-nav-item {{ request()->routeIs('participant.announcements.*') ? 'active' : '' }}">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 5.333A4 4 0 0 0 4 5.333c0 4.667-2 6-2 6h12s-2-1.333-2-6ZM9.153 14a1.333 1.333 0 0 1-2.306 0" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Announcements
+            @php $unreadCount = Auth::user()->unreadNotifications()->count(); @endphp
+            @if ($unreadCount > 0)
+                <span class="sidebar-badge">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+            @endif
         </a>
     </nav>
 
