@@ -1,7 +1,61 @@
 # HostYourHackathon
 
-Platform to create, manage, and host hackathons.
+Free and open-source hackathon management platform built with Laravel. Supports team registration, idea submissions, judging, segments, announcements, and runs on shared hosting.
 
-## Installation
+## Quick Start
 
-[Placeholder for installation instructions]
+```bash
+git clone https://github.com/prayangshuuu/hostyourhackathon.git
+cd hostyourhackathon
+composer install && npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+```
+
+Run in separate terminals:
+
+```bash
+php artisan serve        # → http://127.0.0.1:8000
+npm run dev              # → Vite HMR
+```
+
+Or run everything at once:
+
+```bash
+composer dev
+```
+
+## Database Setup
+
+```sql
+-- Connect to PostgreSQL
+psql -U postgres
+
+-- Create database and user
+CREATE DATABASE hostyourhackathon;
+CREATE USER hostyourhackathon WITH PASSWORD 'your_password';
+
+-- Configure defaults
+ALTER ROLE hostyourhackathon SET client_encoding TO 'utf8';
+ALTER ROLE hostyourhackathon SET default_transaction_isolation TO 'read committed';
+ALTER ROLE hostyourhackathon SET timezone TO 'UTC';
+
+-- Grant access
+GRANT ALL PRIVILEGES ON DATABASE hostyourhackathon TO hostyourhackathon;
+```
+
+Update `.env` with your credentials:
+
+```
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=hostyourhackathon
+DB_USERNAME=hostyourhackathon
+DB_PASSWORD=your_password
+```
+
+## License
+
+Open-source software.
