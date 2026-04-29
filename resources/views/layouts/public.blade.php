@@ -17,7 +17,7 @@
 </head>
 <body style="background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text-primary); margin: 0; padding: 0; padding-top: 56px;">
     
-    <x-navbar />
+    @include('partials.navbar')
 
     <main style="max-width: 1200px; margin: 0 auto; padding: 0 24px; min-height: calc(100vh - 56px);">
         @yield('content')

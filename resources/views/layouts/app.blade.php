@@ -19,8 +19,8 @@
     
     <div style="display: grid; grid-template-columns: 240px 1fr; grid-template-rows: 56px 1fr; min-height: 100vh;">
         
-        <x-navbar />
-        <x-sidebar />
+        @include('partials.navbar')
+        @include('partials.sidebar')
 
         <main style="grid-column: 2; grid-row: 2; padding: 32px; background: var(--bg);">
             <div style="max-width: 1200px; margin: 0 auto;">
