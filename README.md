@@ -56,6 +56,16 @@ DB_USERNAME=hostyourhackathon
 DB_PASSWORD=your_password
 ```
 
+## Demo Credentials
+
+| Role        | Email                       | Password |
+|-------------|----------------------------|----------|
+| Super Admin | super_admin@prayangshu.com | password |
+| Organizer   | organizer@prayangshu.com   | password |
+| Participant | user@prayangshu.com        | password |
+| Judge       | judge@prayangshu.com       | password |
+| Mentor      | mentor@prayangshu.com      | password |
+
 ## Features
 
 - **Hackathon management** with full CRUD and status transitions (draft → published → ongoing → ended → archived)
