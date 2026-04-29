@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\HackathonController as AdminHackathonController;
+use App\Http\Controllers\Admin\SystemController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Judge\ScoreController;
 use App\Http\Controllers\LeaderboardController;
@@ -136,5 +140,36 @@ Route::middleware(['auth', 'verified'])
         Route::get('hackathons/{hackathon}/leaderboard', [LeaderboardController::class, 'show'])
             ->name('leaderboard.show');
     });
+
+// ── Admin Routes ─────────────────────────────────────────────────
+Route::middleware(['auth', 'verified', 'role:super_admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/', AdminDashboardController::class)->name('dashboard');
+
+        // Users
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::post('users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate');
+
+        // Hackathons
+        Route::get('hackathons', [AdminHackathonController::class, 'index'])->name('hackathons.index');
+        Route::delete('hackathons/{hackathon}/force', [AdminHackathonController::class, 'forceDelete'])->name('hackathons.force-delete');
+        Route::post('hackathons/{hackathon}/restore', [AdminHackathonController::class, 'restore'])->name('hackathons.restore');
+
+        // Settings
+        Route::get('settings', [SystemController::class, 'show'])->name('settings');
+        Route::post('settings/general', [SystemController::class, 'updateGeneral'])->name('settings.general');
+        Route::post('settings/registration', [SystemController::class, 'updateRegistration'])->name('settings.registration');
+        Route::post('settings/uploads', [SystemController::class, 'updateUploads'])->name('settings.uploads');
+    });
+
+// ── Impersonation (any authenticated user can stop) ──────────────
+Route::middleware(['auth'])
+    ->post('admin/stop-impersonation', [UserController::class, 'stopImpersonation'])
+    ->name('admin.stop-impersonation');
 
 require __DIR__.'/auth.php';

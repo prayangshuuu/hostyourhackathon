@@ -17,6 +17,16 @@
 </head>
 <body class="organizer-shell">
 
+    {{-- Impersonation Banner --}}
+    @if (session('impersonating_from'))
+        <div class="impersonation-banner">
+            You are impersonating {{ session('impersonating_name', Auth::user()->name) }}
+            <a href="{{ route('admin.stop-impersonation') }}" onclick="event.preventDefault(); document.getElementById('stop-impersonation-form').submit();">Exit Impersonation</a>
+            <form id="stop-impersonation-form" method="POST" action="{{ route('admin.stop-impersonation') }}" style="display:none;">@csrf</form>
+        </div>
+        <div style="height:36px;"></div>
+    @endif
+
     {{-- Sidebar --}}
     @include('components.organizer.sidebar')
 
