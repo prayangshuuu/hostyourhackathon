@@ -1,4 +1,4 @@
-@extends('layouts.participant')
+@extends('layouts.app')
 
 @section('title', $submission->title)
 @section('meta_description', 'Submission details for ' . $submission->title)

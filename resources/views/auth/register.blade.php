@@ -1,4 +1,4 @@
-<x-auth-layout>
+<x-guest-layout>
     <x-slot name="title">Create Account</x-slot>
     <x-slot name="metaDescription">Create your HostYourHackathon account to join and organize hackathons.</x-slot>
 
@@ -123,4 +123,4 @@
             <a href="{{ route('login') }}" class="font-medium text-indigo-400 transition hover:text-indigo-300" id="login-link">Sign in</a>
         </p>
     </x-slot>
-</x-auth-layout>
+</x-guest-layout>

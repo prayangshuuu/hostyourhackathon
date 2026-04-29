@@ -1,4 +1,4 @@
-<x-auth-layout>
+<x-guest-layout>
     <x-slot name="title">Forgot Password</x-slot>
     <x-slot name="metaDescription">Reset your HostYourHackathon password by requesting a secure reset link.</x-slot>
 
@@ -45,4 +45,4 @@
             <a href="{{ route('login') }}" class="font-medium text-indigo-400 transition hover:text-indigo-300">Back to sign in</a>
         </p>
     </x-slot>
-</x-auth-layout>
+</x-guest-layout>

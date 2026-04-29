@@ -1,4 +1,4 @@
-@extends('layouts.organizer')
+@extends('layouts.app')
 
 @section('title', 'Scoring Criteria')
 @section('meta_description', 'Manage scoring criteria for ' . $hackathon->title)

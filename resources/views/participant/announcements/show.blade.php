@@ -1,4 +1,4 @@
-@extends('layouts.participant')
+@extends('layouts.app')
 
 @section('title', $announcement->title)
 @section('meta_description', str()->limit(strip_tags($announcement->body), 160))

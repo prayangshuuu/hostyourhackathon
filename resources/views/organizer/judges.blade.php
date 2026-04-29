@@ -1,4 +1,4 @@
-@extends('layouts.organizer')
+@extends('layouts.app')
 
 @section('title', 'Judge Assignments')
 @section('meta_description', 'Manage judge assignments for ' . $hackathon->title)

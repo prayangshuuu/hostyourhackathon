@@ -1,4 +1,4 @@
-<x-auth-layout>
+<x-guest-layout>
     <x-slot name="title">Sign In</x-slot>
     <x-slot name="metaDescription">Sign in to your HostYourHackathon account to manage and participate in hackathons.</x-slot>
 
@@ -107,4 +107,4 @@
             <a href="{{ route('register') }}" class="font-medium text-indigo-400 transition hover:text-indigo-300" id="register-link">Create one</a>
         </p>
     </x-slot>
-</x-auth-layout>
+</x-guest-layout>

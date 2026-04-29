@@ -1,4 +1,4 @@
-@extends('layouts.judge')
+@extends('layouts.app')
 
 @section('title', 'Judging Dashboard')
 @section('meta_description', 'Your judging assignments and scoring progress')

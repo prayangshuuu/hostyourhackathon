@@ -1,4 +1,4 @@
-<x-auth-layout>
+<x-guest-layout>
     <x-slot name="title">Verify Email</x-slot>
     <x-slot name="metaDescription">Verify your email address to complete your HostYourHackathon registration.</x-slot>
 
@@ -46,4 +46,4 @@
             </button>
         </form>
     </div>
-</x-auth-layout>
+</x-guest-layout>

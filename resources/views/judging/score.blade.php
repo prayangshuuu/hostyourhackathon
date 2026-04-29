@@ -1,4 +1,4 @@
-@extends('layouts.judge')
+@extends('layouts.app')
 
 @section('title', 'Score — ' . $submission->title)
 @section('meta_description', 'Score submission: ' . $submission->title)

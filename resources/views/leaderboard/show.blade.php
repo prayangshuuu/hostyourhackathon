@@ -1,4 +1,4 @@
-@extends('layouts.participant')
+@extends('layouts.app')
 
 @section('title', 'Leaderboard')
 @section('meta_description', 'Leaderboard for ' . $hackathon->title)

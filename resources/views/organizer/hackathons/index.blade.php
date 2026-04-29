@@ -1,4 +1,4 @@
-@extends('layouts.organizer')
+@extends('layouts.app')
 
 @section('title', 'Hackathons')
 @section('meta_description', 'Manage all your hackathons')
