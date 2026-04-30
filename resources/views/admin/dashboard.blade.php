@@ -9,22 +9,26 @@
 
     {{-- Stat Cards --}}
     <div class="stat-grid-4">
-        <div class="stat-card">
-            <div class="stat-label">Total Users</div>
+        <x-card class="stat-card">
+            <div class="stat-icon-wrap">@svg('heroicon-o-users', 'w-5 h-5')</div>
             <div class="stat-value">{{ $totalUsers ?? 0 }}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Total Hackathons</div>
+            <div class="stat-label">Total Users</div>
+        </x-card>
+        <x-card class="stat-card">
+            <div class="stat-icon-wrap">@svg('heroicon-o-calendar-days', 'w-5 h-5')</div>
             <div class="stat-value">{{ $totalHackathons ?? 0 }}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Total Submissions</div>
+            <div class="stat-label">Total Hackathons</div>
+        </x-card>
+        <x-card class="stat-card">
+            <div class="stat-icon-wrap">@svg('heroicon-o-document-text', 'w-5 h-5')</div>
             <div class="stat-value">{{ $totalSubmissions ?? 0 }}</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Total Teams</div>
+            <div class="stat-label">Total Submissions</div>
+        </x-card>
+        <x-card class="stat-card">
+            <div class="stat-icon-wrap">@svg('heroicon-o-user-group', 'w-5 h-5')</div>
             <div class="stat-value">{{ $totalTeams ?? 0 }}</div>
-        </div>
+            <div class="stat-label">Total Teams</div>
+        </x-card>
     </div>
 
     {{-- 6/6 Layout --}}
@@ -85,9 +89,7 @@
                             </div>
                         </div>
                     @empty
-                        <div style="text-align: center; padding: 16px; color: var(--text-muted); font-size: 13px;">
-                            No recent users.
-                        </div>
+                        <x-empty-state icon="heroicon-o-users" title="No recent users" description="Newly registered accounts will appear here." />
                     @endforelse
                 </div>
             </x-card>

@@ -10,12 +10,12 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body style="background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text-primary); margin: 0; padding: 0;">
+<body style="background: var(--bg); color: var(--text-primary);">
     
     <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;">
         <div style="width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 40px;">

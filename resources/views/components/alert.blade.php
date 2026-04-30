@@ -1,7 +1,7 @@
 @props(['type' => 'info', 'message'])
 
 @php
-    $baseStyles = "padding: 12px 16px; border-radius: var(--radius-md); font-size: 14px; border: 1px solid; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; transition: opacity 300ms ease, transform 300ms ease;";
+    $baseStyles = "position: relative; padding: 12px 40px 12px 16px; border-radius: var(--radius-md); font-size: 14px; border: 1px solid; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; transition: opacity 300ms ease, transform 300ms ease;";
     
     $typeStyles = match($type) {
         'success' => "background: var(--success-light); border-color: rgba(22,163,74,0.2); color: var(--success);",
@@ -11,20 +11,21 @@
     };
     
     $icon = match($type) {
-        'success' => '<path d="M8 1.333A6.667 6.667 0 1 0 14.667 8 6.674 6.674 0 0 0 8 1.333Zm3.06 4.94-3.667 4a.667.667 0 0 1-.986 0L4.94 8.607a.667.667 0 1 1 .986-.9l.96 1.046 3.174-3.46a.667.667 0 0 1 .986.9l.014.02Z" fill="currentColor"/>',
-        'error' => '<path d="M8 1.333A6.667 6.667 0 1 0 14.667 8 6.674 6.674 0 0 0 8 1.333Zm2.473 8.527a.667.667 0 0 1-.946.946L8 9.28l-1.527 1.527a.667.667 0 0 1-.946-.946L7.054 8.333 5.527 6.807a.667.667 0 0 1 .946-.947L8 7.387l1.527-1.527a.667.667 0 0 1 .946.947L8.946 8.333l1.527 1.527Z" fill="currentColor"/>',
-        'warning' => '<path d="M14.267 12.467 8.8 2.8a.933.933 0 0 0-1.6 0L1.733 12.467a.867.867 0 0 0 .8 1.2h10.934a.867.867 0 0 0 .8-1.2ZM8 11.333a.667.667 0 1 1 0-1.333.667.667 0 0 1 0 1.333Zm.667-3.333a.667.667 0 0 1-1.334 0V5.333a.667.667 0 0 1 1.334 0V8Z" fill="currentColor"/>',
-        default => '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>', // info
+        'success' => 'check-circle',
+        'error' => 'x-circle',
+        'warning' => 'exclamation-triangle',
+        default => 'information-circle',
     };
     
     $alertId = 'alert-' . Str::random(8);
 @endphp
 
 <div id="{{ $alertId }}" style="{{ $baseStyles }} {{ $typeStyles }}" role="alert">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        {!! $icon !!}
-    </svg>
+    @svg('heroicon-o-' . $icon, 'w-[18px] h-[18px]')
     {{ $message }}
+    <button type="button" onclick="document.getElementById('{{ $alertId }}')?.remove()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: currentColor; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; cursor: pointer;">
+        <x-heroicon-o-x-mark class="w-4 h-4" />
+    </button>
 </div>
 
 <script>
@@ -36,6 +37,6 @@
                 el.style.transform = 'translateY(-8px)';
                 setTimeout(() => el.remove(), 300);
             }
-        }, 4000);
+        }, 5000);
     });
 </script>

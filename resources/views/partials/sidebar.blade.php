@@ -6,35 +6,35 @@
 
         if ($role === 'participant') {
             $navItems = [
-                ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>'],
-                ['label' => 'Browse Hackathons', 'route' => 'hackathons.index', 'icon' => '<circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M2 12h20"></path>'],
-                ['label' => 'My Teams', 'route' => 'teams.index', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
+                ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'heroicon-o-home'],
+                ['label' => 'Browse Hackathons', 'route' => 'hackathons.index', 'icon' => 'heroicon-o-globe-alt'],
+                ['label' => 'My Teams', 'route' => 'teams.index', 'icon' => 'heroicon-o-user-group'],
             ];
         } elseif ($role === 'organizer') {
             $navItems = [
-                ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>'],
-                ['label' => 'My Hackathons', 'route' => 'organizer.hackathons.index', 'icon' => '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>'],
-                ['label' => 'Teams', 'route' => 'organizer.teams.index', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
-                ['label' => 'Submissions', 'route' => 'organizer.submissions.index', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>'],
+                ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'heroicon-o-home'],
+                ['label' => 'My Hackathons', 'route' => 'organizer.hackathons.index', 'icon' => 'heroicon-o-calendar-days'],
+                ['label' => 'Teams', 'route' => 'organizer.teams.index', 'icon' => 'heroicon-o-user-group'],
+                ['label' => 'Submissions', 'route' => 'organizer.submissions.index', 'icon' => 'heroicon-o-document-text'],
             ];
         } elseif ($role === 'judge') {
             $navItems = [
-                ['label' => 'Dashboard', 'route' => 'judge.dashboard', 'icon' => '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>'],
+                ['label' => 'Dashboard', 'route' => 'judge.dashboard', 'icon' => 'heroicon-o-home'],
             ];
         } elseif ($role === 'super_admin') {
             $navItems = [
-                ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>'],
-                ['label' => 'My Hackathons', 'route' => 'organizer.hackathons.index', 'icon' => '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>'],
-                ['label' => 'Teams', 'route' => 'organizer.teams.index', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
-                ['label' => 'Submissions', 'route' => 'organizer.submissions.index', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>'],
-                ['label' => 'Users', 'route' => 'admin.users.index', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>'],
-                ['label' => 'All Hackathons', 'route' => 'admin.hackathons.index', 'icon' => '<circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M2 12h20"></path>'],
-                ['label' => 'Settings', 'route' => 'admin.settings.index', 'icon' => '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>'],
+                ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'heroicon-o-home'],
+                ['label' => 'My Hackathons', 'route' => 'organizer.hackathons.index', 'icon' => 'heroicon-o-calendar-days'],
+                ['label' => 'Teams', 'route' => 'organizer.teams.index', 'icon' => 'heroicon-o-user-group'],
+                ['label' => 'Submissions', 'route' => 'organizer.submissions.index', 'icon' => 'heroicon-o-document-text'],
+                ['label' => 'Users', 'route' => 'admin.users.index', 'icon' => 'heroicon-o-users'],
+                ['label' => 'All Hackathons', 'route' => 'admin.hackathons.index', 'icon' => 'heroicon-o-globe-alt'],
+                ['label' => 'Settings', 'route' => 'admin.settings.index', 'icon' => 'heroicon-o-cog-6-tooth'],
             ];
         }
     @endphp
 
-    <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; margin: 16px 0 6px;">Menu</div>
+    <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 10px 4px; margin: 0;">Menu</div>
     <nav style="display: flex; flex-direction: column; gap: 4px;">
         @foreach ($navItems as $item)
             @php
@@ -48,10 +48,8 @@
                 }
                 $isActive = Route::has($item['route']) ? request()->routeIs($item['route'].'*') : false;
             @endphp
-            <a href="{{ $href }}" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: {{ $isActive ? 'var(--accent)' : 'var(--text-secondary)' }}; background: {{ $isActive ? 'var(--accent-light)' : 'transparent' }}; text-decoration: none;" onmouseover="if(!{{ $isActive ? 'true' : 'false' }}) { this.style.background='var(--surface-alt)'; this.style.color='var(--text-primary)'; }" onmouseout="if(!{{ $isActive ? 'true' : 'false' }}) { this.style.background='transparent'; this.style.color='var(--text-secondary)'; }">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    {!! $item['icon'] !!}
-                </svg>
+            <a href="{{ $href }}" style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border-radius: var(--radius-md); font-size: 15px; line-height: 1.5; font-weight: {{ $isActive ? '600' : '500' }}; color: {{ $isActive ? 'var(--accent)' : 'var(--text-secondary)' }}; background: {{ $isActive ? 'var(--accent-light)' : 'transparent' }}; text-decoration: none;" onmouseover="if(!{{ $isActive ? 'true' : 'false' }}) { this.style.background='var(--surface-alt)'; this.style.color='var(--text-primary)'; }" onmouseout="if(!{{ $isActive ? 'true' : 'false' }}) { this.style.background='transparent'; this.style.color='var(--text-secondary)'; }">
+                @svg($item['icon'], 'w-[18px] h-[18px]')
                 {{ $item['label'] }}
             </a>
         @endforeach

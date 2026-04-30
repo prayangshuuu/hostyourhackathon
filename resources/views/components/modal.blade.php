@@ -2,10 +2,7 @@
 
 @php
     $id = $id ?? $name ?? Str::random(8);
-    $maxWidth = match($size) {
-        'sm' => '440px',
-        default => '560px',
-    };
+    $maxWidth = '440px';
 @endphp
 
 <div id="{{ $id }}" 
@@ -22,21 +19,26 @@
     x-on:close.stop="show = false"
     x-on:keydown.escape.window="show = false"
     x-show="show"
-    style="display: {{ $show ? 'block' : 'none' }}; background: rgba(0,0,0,0.4); position: fixed; inset: 0; z-index: 100;" 
+    style="display: {{ $show ? 'block' : 'none' }}; background: rgba(0,0,0,0.35); position: fixed; inset: 0; z-index: 100;" 
     class="modal-backdrop">
     
-    <div x-show="show" x-on:click.outside="show = false" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 28px; max-width: {{ $maxWidth }}; width: 100%; margin: 20vh auto 0; position: relative;">
+    <div x-show="show" x-on:click.outside="show = false" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 0; max-width: {{ $maxWidth }}; width: calc(100% - 24px); margin: 15vh auto 0; position: relative;">
         
         @if($title)
-            <h2 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0;">{{ $title }}</h2>
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--border); position: relative;">
+                <h2 style="font-size: 16px; line-height: 1.4; font-weight: 600; color: var(--text-primary); margin: 0;">{{ $title }}</h2>
+                <button type="button" x-on:click="show = false" style="position: absolute; top: 16px; right: 16px; width: 30px; height: 30px; border: none; background: transparent; color: var(--text-secondary); border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <x-heroicon-o-x-mark class="w-4 h-4" />
+                </button>
+            </div>
         @endif
         
-        <div style="{{ $title ? 'margin: 12px 0 24px;' : 'margin: 0;' }} font-size: 14px; color: var(--text-secondary);">
+        <div style="padding: 20px 24px; font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
             {{ $slot }}
         </div>
         
         @if($title)
-            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <div style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px;">
                 <x-button type="button" variant="ghost" onclick="closeModal('{{ $id }}')" x-on:click="show = false">Cancel</x-button>
                 <x-button type="submit" variant="{{ $confirmVariant }}" form="{{ $id }}-form">{{ $confirmLabel }}</x-button>
             </div>

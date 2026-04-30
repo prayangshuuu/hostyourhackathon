@@ -1,47 +1,35 @@
-@props(['variant' => 'primary', 'size' => 'md', 'type' => 'button', 'href' => null])
+@props([
+    'variant' => 'primary',
+    'size' => 'md',
+    'type' => 'button',
+    'href' => null,
+    'iconOnly' => false,
+    'fullWidth' => false,
+])
 
 @php
-    $baseStyles = "display: inline-flex; align-items: center; justify-content: center; font-family: Inter, sans-serif; cursor: pointer; transition: background 150ms ease; text-decoration: none; border-radius: var(--radius-md); font-weight: 500;";
-    
-    // Size variants
-    $sizeStyles = match($size) {
-        'sm' => "padding: 6px 12px; font-size: 13px;",
-        default => "padding: 9px 16px; font-size: 14px;",
+    $sizeClass = match ($size) {
+        'sm' => $iconOnly ? 'btn-icon-sm' : 'btn-sm',
+        'lg' => $iconOnly ? 'btn-icon-md' : 'btn-lg',
+        default => $iconOnly ? 'btn-icon-md' : 'btn-md',
     };
 
-    // Color variants
-    $variantStyles = match($variant) {
-        'secondary' => "background: var(--surface); color: var(--text-primary); border: 1px solid var(--border);",
-        'danger' => "background: var(--danger-light); color: var(--danger); border: 1px solid rgba(220,38,38,0.2);",
-        'ghost' => "background: transparent; color: var(--text-secondary); border: none;",
-        default => "background: var(--accent); color: white; border: 1px solid var(--accent);", // primary
+    $variantClass = match ($variant) {
+        'secondary' => 'btn-secondary',
+        'danger' => 'btn-danger',
+        'ghost' => 'btn-ghost',
+        default => 'btn-primary',
     };
-    
-    // Add hover effects using inline styles via onmouseover/onmouseout attributes since we can't do pseudo-classes inline
-    $hoverColor = match($variant) {
-        'secondary' => 'var(--surface-alt)',
-        'danger' => 'rgba(220,38,38,0.1)',
-        'ghost' => 'var(--surface-alt)',
-        default => 'var(--accent-hover)', // primary
-    };
-    $defaultBg = match($variant) {
-        'secondary' => 'var(--surface)',
-        'danger' => 'var(--danger-light)',
-        'ghost' => 'transparent',
-        default => 'var(--accent)', // primary
-    };
-    
-    $style = "{$baseStyles} {$sizeStyles} {$variantStyles}";
-    $onmouseover = "this.style.background='{$hoverColor}'";
-    $onmouseout = "this.style.background='{$defaultBg}'";
+
+    $classes = trim('btn ' . $sizeClass . ' ' . $variantClass . ($fullWidth ? ' btn-full' : ''));
 @endphp
 
-@if($href)
-    <a href="{{ $href }}" style="{{ $style }}" onmouseover="{{ $onmouseover }}" onmouseout="{{ $onmouseout }}" {{ $attributes }}>
+@if ($href)
+    <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
         {{ $slot }}
     </a>
 @else
-    <button type="{{ $type }}" style="{{ $style }}" onmouseover="{{ $onmouseover }}" onmouseout="{{ $onmouseout }}" onfocus="this.style.outline='2px solid var(--accent-ring)'; this.style.outlineOffset='2px';" onblur="this.style.outline='none';" {{ $attributes }}>
+    <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>
         {{ $slot }}
     </button>
 @endif

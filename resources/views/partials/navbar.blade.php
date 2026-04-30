@@ -1,8 +1,8 @@
 <nav style="height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: fixed; top: {{ session('impersonating_from') ? '40px' : '0' }}; left: 0; width: 100%; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
     {{-- Left: Logo --}}
     <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
-        <div style="width: 16px; height: 16px; background: var(--accent); border-radius: 2px;"></div>
-        <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">HostYourHackathon</span>
+        <div style="width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700;">H</div>
+        <span style="font-size: 15px; line-height: 1.5; font-weight: 600; color: var(--text-primary);">HostYourHackathon</span>
     </a>
 
     {{-- Right --}}
@@ -10,11 +10,8 @@
         @auth
             {{-- Notification Bell --}}
             <div x-data="{ open: false, unread: {{ $unreadCount ?? 0 }} }" style="position: relative;">
-                <button @click="open = !open" @click.away="open = false" style="width: 36px; height: 36px; border-radius: var(--radius-md); background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; position: relative; transition: background 150ms ease;" onmouseover="this.style.background='var(--surface-alt)'" onmouseout="this.style.background='transparent'">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
+                <button @click="open = !open" @click.away="open = false" class="btn btn-ghost btn-icon-md" style="position: relative;">
+                    <x-heroicon-o-bell class="w-5 h-5" />
                     @if(($unreadCount ?? 0) > 0)
                         <span x-show="unread > 0" x-text="unread" style="position: absolute; top: -6px; right: -6px; background: var(--accent); color: white; font-size: 11px; font-weight: 600; border-radius: 99px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;"></span>
                     @endif
@@ -54,8 +51,10 @@
 
             {{-- User Avatar Dropdown --}}
             <div x-data="{ open: false }" style="position: relative;">
-                <button @click="open = !open" @click.away="open = false" style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-light); color: var(--accent); border: none; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                <button @click="open = !open" @click.away="open = false" style="border: none; background: transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                    <span style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center;">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</span>
+                    <span style="font-size: 14px; line-height: 1.6; font-weight: 500; color: var(--text-primary);" class="hidden sm:inline">{{ Auth::user()->name }}</span>
+                    <x-heroicon-o-chevron-down class="w-[14px] h-[14px]" />
                 </button>
 
                 <div x-show="open" style="display: none; position: absolute; right: 0; top: 48px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 6px; min-width: 200px;" x-transition>

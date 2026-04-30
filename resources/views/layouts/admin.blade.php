@@ -10,12 +10,12 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body style="background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text-primary); margin: 0; padding: 0;">
+<body style="background: var(--bg); color: var(--text-primary);">
     @if(session('impersonating_from'))
         <div style="position: fixed; top: 0; width: 100%; z-index: 200; height: 40px; background: #fef3c7; border-bottom: 1px solid #fde68a; color: #92400e; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
             <div>Impersonating: {{ Auth::user()->name }} ({{ Auth::user()->email }})</div>

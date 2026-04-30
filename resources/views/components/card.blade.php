@@ -1,25 +1,33 @@
-@props(['title' => null, 'description' => null])
+@props(['title' => null, 'description' => null, 'variant' => 'default'])
 
-<div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;">
+@php
+    $variantClass = match ($variant) {
+        'flat' => 'card-flat',
+        'accent' => 'card-outlined-accent',
+        default => '',
+    };
+@endphp
+
+<div class="card {{ $variantClass }}" style="overflow: hidden;">
     @if($title || isset($actions))
-        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start;">
+        <div class="card-header">
             <div>
                 @if($title)
-                    <h3 style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 0;">{{ $title }}</h3>
+                    <h3 style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">{{ $title }}</h3>
                 @endif
                 @if($description)
-                    <p style="font-size: 13px; color: var(--text-muted); margin: 2px 0 0 0;">{{ $description }}</p>
+                    <p style="font-size: 13px; line-height: 1.5; color: var(--text-muted); margin: 2px 0 0 0;">{{ $description }}</p>
                 @endif
             </div>
             @if(isset($actions))
-                <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
                     {{ $actions }}
                 </div>
             @endif
         </div>
     @endif
 
-    <div style="padding: 20px;">
+    <div class="card-body">
         {{ $slot }}
     </div>
 </div>
