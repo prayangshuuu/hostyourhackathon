@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\HackathonStatus;
 use App\Models\Hackathon;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Submission;
+use App\Models\Team;
+use App\Models\User;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -14,20 +15,14 @@ class HomeController extends Controller
      */
     public function index(): View
     {
-        $hackathonsData = Cache::remember('public.hackathons.upcoming', 300, function () {
-            return Hackathon::whereIn('status', [
-                HackathonStatus::Published,
-                HackathonStatus::Ongoing,
-            ])
-                ->latest('registration_opens_at')
-                ->take(6)
-                ->get()
-                ->map->getAttributes()
-                ->all();
-        });
-
-        $hackathons = Hackathon::hydrate($hackathonsData);
-
-        return view('public.home', compact('hackathons'));
+        $activeHackathons = Hackathon::active()->with(['segments','creator'])->latest()->take(6)->get();
+        $stats = [
+            'hackathons' => Hackathon::count(),
+            'participants' => User::whereHas('teamMemberships')->count(),
+            'submissions' => Submission::whereNotNull('submitted_at')->count(),
+            'teams' => Team::count(),
+        ];
+        
+        return view('home', compact('activeHackathons', 'stats'));
     }
 }
