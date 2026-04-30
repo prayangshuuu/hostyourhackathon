@@ -16,22 +16,32 @@
             <span>Submission</span>
         </div>
         <div class="page-header-row">
-            <div style="display:flex; align-items:center; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                 <h1 class="text-page-title">{{ $submission->title }}</h1>
                 @if ($submission->isFinal())
                     <span class="badge badge-submitted">Submitted</span>
                 @else
                     <span class="badge badge-draft">Draft</span>
                 @endif
-            </div>
-            @can('reopen', $submission)
-                @if ($submission->isFinal())
-                    <form method="POST" action="{{ route('organizer.submissions.reopen', $submission) }}">
-                        @csrf
-                        <button type="submit" class="btn btn-secondary" id="btn-reopen">Re-open Submission</button>
-                    </form>
+                @if (($hackathonEnded ?? false))
+                    <span class="badge" style="background:var(--surface-alt);color:var(--color-text-secondary);border:1px solid var(--color-border-subtle);">Hackathon Ended</span>
                 @endif
-            @endcan
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                @can('update', $submission)
+                    @if ($submission->isEditable())
+                        <a href="{{ route('submissions.edit', $submission) }}" class="btn btn-primary btn-sm">Edit</a>
+                    @endif
+                @endcan
+                @can('reopen', $submission)
+                    @if ($submission->isFinal())
+                        <form method="POST" action="{{ route('organizer.submissions.reopen', $submission) }}" style="margin:0;">
+                            @csrf
+                            <button type="submit" class="btn btn-secondary btn-sm" id="btn-reopen">Re-open Submission</button>
+                        </form>
+                    @endif
+                @endcan
+            </div>
         </div>
     </div>
 
@@ -93,7 +103,7 @@
                 <p class="text-card-title" style="margin-bottom:12px;">Attachments</p>
                 @if ($submission->files->count())
                     @foreach ($submission->files as $file)
-                        <div class="file-row">
+                        <a href="{{ route('submissions.files.download', [$submission, $file]) }}" class="file-row" style="text-decoration:none; color:inherit;">
                             <svg class="file-row-icon" viewBox="0 0 16 16" fill="none">
                                 @if ($file->file_type === 'pdf')
                                     <path d="M4 1h5.586L13 4.414V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.2"/>
@@ -105,7 +115,8 @@
                             </svg>
                             <span class="file-row-name">{{ $file->original_name }}</span>
                             <span class="file-row-size">{{ number_format($file->file_size_kb, 0) }} KB</span>
-                        </div>
+                            <span class="text-helper" style="margin-left:auto;font-size:12px;">Download</span>
+                        </a>
                     @endforeach
                 @else
                     <p class="text-helper">No files attached.</p>

@@ -18,63 +18,103 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // 1. $myTeams
-        $myTeams = Team::whereHas('members', fn ($q) => $q->where('user_id', $user->id))
-            ->whereHas('hackathon', function ($q) {
-                $q->whereIn('status', ['published', 'ongoing']);
-            })
-            ->with(['hackathon', 'segment'])
+        $hasActiveHackathons = Hackathon::active()->exists();
+
+        $myPastTeams = Team::whereHas('members', fn ($q) => $q->where('user_id', $user->id))
+            ->with(['hackathon', 'segment', 'members'])
+            ->withCount('members')
+            ->latest()
             ->get();
 
-        $hackathons = $myTeams->pluck('hackathon')->unique('id');
-
-        // 2. $mySubmissions
-        $teamIds = $myTeams->pluck('id');
-        $mySubmissions = Submission::whereIn('team_id', $teamIds)
+        $myPastSubmissions = Submission::whereHas('team.members', fn ($q) => $q->where('user_id', $user->id))
             ->with(['hackathon', 'team'])
+            ->withSum('scores', 'score')
+            ->orderByDesc('submitted_at')
+            ->orderByDesc('id')
             ->get();
 
-        // 3. $announcements
-        // All public + registered hackathon announcements
-        $announcements = Announcement::whereNotNull('published_at')
-            ->where(function ($query) use ($hackathons) {
-                $query->where('visibility', 'public')
-                      ->orWhere(function ($q) use ($hackathons) {
-                          $q->where('visibility', 'registered_only')
-                            ->whereIn('hackathon_id', $hackathons->pluck('id'));
-                      });
-            })
-            ->where(function ($q) {
-                $q->where('scheduled_at', '<=', now())->orWhereNull('scheduled_at');
-            })
-            ->latest('published_at')
-            ->take(5)
-            ->get();
+        if ($hasActiveHackathons) {
+            $myTeams = Team::whereHas('members', fn ($q) => $q->where('user_id', $user->id))
+                ->whereHas('hackathon', fn ($hq) => $hq->active())
+                ->with(['hackathon', 'segment'])
+                ->get();
 
-        // 4. $deadlines
-        $deadlines = collect();
-        foreach ($hackathons as $hackathon) {
-            if ($hackathon->registration_closes_at && $hackathon->registration_closes_at->isFuture()) {
-                $deadlines->push([
-                    'hackathon' => $hackathon->title,
-                    'label' => 'Registration closes',
-                    'date' => $hackathon->registration_closes_at,
-                    'past' => false,
-                ]);
+            $hackathons = $myTeams->pluck('hackathon')->unique('id');
+
+            $teamIds = $myTeams->pluck('id');
+            $mySubmissions = Submission::whereIn('team_id', $teamIds)
+                ->with(['hackathon', 'team'])
+                ->get();
+
+            $announcements = Announcement::whereNotNull('published_at')
+                ->where(function ($query) use ($hackathons) {
+                    $query->where('visibility', 'public')
+                        ->orWhere(function ($q) use ($hackathons) {
+                            $q->where('visibility', 'registered_only')
+                                ->whereIn('hackathon_id', $hackathons->pluck('id'));
+                        });
+                })
+                ->where(function ($q) {
+                    $q->where('scheduled_at', '<=', now())->orWhereNull('scheduled_at');
+                })
+                ->latest('published_at')
+                ->take(5)
+                ->get();
+
+            $deadlines = collect();
+            foreach ($hackathons as $hackathon) {
+                if ($hackathon->registration_closes_at && $hackathon->registration_closes_at->isFuture()) {
+                    $deadlines->push([
+                        'hackathon' => $hackathon->title,
+                        'label' => 'Registration closes',
+                        'date' => $hackathon->registration_closes_at,
+                        'past' => false,
+                    ]);
+                }
+                if ($hackathon->submission_closes_at && $hackathon->submission_closes_at->isFuture()) {
+                    $deadlines->push([
+                        'hackathon' => $hackathon->title,
+                        'label' => 'Submission deadline',
+                        'date' => $hackathon->submission_closes_at,
+                        'past' => false,
+                    ]);
+                }
             }
-            if ($hackathon->submission_closes_at && $hackathon->submission_closes_at->isFuture()) {
-                $deadlines->push([
-                    'hackathon' => $hackathon->title,
-                    'label' => 'Submission deadline',
-                    'date' => $hackathon->submission_closes_at,
-                    'past' => false,
-                ]);
-            }
+            $deadlines = $deadlines->sortBy('date')->take(6);
+        } else {
+            $myTeams = collect();
+            $mySubmissions = collect();
+            $hackathons = collect();
+            $deadlines = collect();
+
+            $pastIds = $myPastTeams->pluck('hackathon_id')->unique()->filter();
+
+            $announcements = Announcement::whereNotNull('published_at')
+                ->where(function ($query) use ($pastIds) {
+                    $query->where('visibility', 'public')
+                        ->orWhere(function ($q) use ($pastIds) {
+                            $q->where('visibility', 'registered_only')
+                                ->whereIn('hackathon_id', $pastIds);
+                        });
+                })
+                ->where(function ($q) {
+                    $q->where('scheduled_at', '<=', now())->orWhereNull('scheduled_at');
+                })
+                ->latest('published_at')
+                ->take(5)
+                ->get();
         }
-        $deadlines = $deadlines->sortBy('date')->take(6);
 
         return view('dashboard', compact(
-            'user', 'myTeams', 'mySubmissions', 'announcements', 'deadlines', 'hackathons'
+            'user',
+            'myTeams',
+            'mySubmissions',
+            'announcements',
+            'deadlines',
+            'hackathons',
+            'hasActiveHackathons',
+            'myPastTeams',
+            'myPastSubmissions',
         ));
     }
 }

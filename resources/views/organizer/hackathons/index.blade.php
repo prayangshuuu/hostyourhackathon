@@ -5,8 +5,15 @@
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
         <h1 class="text-page-title">My Hackathons</h1>
-        <x-button href="{{ route('organizer.hackathons.create') }}" variant="primary">New Hackathon</x-button>
+        <x-button href="{{ route('organizer.hackathons.create') }}" variant="primary">Create Hackathon</x-button>
     </div>
+
+    @if (!$hasActiveHackathonsInSystem)
+        <div style="margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--radius-lg); padding: 16px 20px;">
+            <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">You have no active hackathons</div>
+            <p style="font-size: 14px; color: var(--text-secondary); margin: 6px 0 0 0;">Published and ongoing hackathons will appear here. You can always create your next hackathon below.</p>
+        </div>
+    @endif
 
     @if (session('success'))
         <div style="margin-bottom: 24px;">
@@ -23,7 +30,7 @@
         @if ($hackathons->isEmpty())
             <div style="text-align: center; padding: 48px 24px;">
                 <p style="color: var(--text-secondary); margin-bottom: 16px;">You haven't created any hackathons yet.</p>
-                <x-button href="{{ route('organizer.hackathons.create') }}" variant="primary">Create Your First Hackathon</x-button>
+                <x-button href="{{ route('organizer.hackathons.create') }}" variant="primary">Create Hackathon</x-button>
             </div>
         @else
             <div style="overflow-x: auto;">

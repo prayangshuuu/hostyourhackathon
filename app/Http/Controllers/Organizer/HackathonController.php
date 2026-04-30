@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHackathonRequest;
 use App\Http\Requests\UpdateHackathonRequest;
 use App\Models\Hackathon;
+use App\Models\User;
 use App\Services\HackathonService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,9 +15,7 @@ use Illuminate\View\View;
 
 class HackathonController extends Controller
 {
-    public function __construct(private HackathonService $hackathonService)
-    {
-    }
+    public function __construct(private HackathonService $hackathonService) {}
 
     public function index(Request $request): View
     {
@@ -36,7 +35,9 @@ class HackathonController extends Controller
                 ->get();
         }
 
-        return view('organizer.hackathons.index', compact('hackathons'));
+        $hasActiveHackathonsInSystem = Hackathon::active()->exists();
+
+        return view('organizer.hackathons.index', compact('hackathons', 'hasActiveHackathonsInSystem'));
     }
 
     public function create(Request $request): View|RedirectResponse
@@ -58,14 +59,14 @@ class HackathonController extends Controller
 
         try {
             $data = $request->validated();
-            
+
             $hackathon = $this->hackathonService->store($request->user(), $data);
 
             if ($request->hasFile('logo')) {
-                $hackathon->logo = $request->file('logo')->store('hackathons/' . $hackathon->id, 'public');
+                $hackathon->logo = $request->file('logo')->store('hackathons/'.$hackathon->id, 'public');
             }
             if ($request->hasFile('banner')) {
-                $hackathon->banner = $request->file('banner')->store('hackathons/' . $hackathon->id, 'public');
+                $hackathon->banner = $request->file('banner')->store('hackathons/'.$hackathon->id, 'public');
             }
             if ($hackathon->isDirty(['logo', 'banner'])) {
                 $hackathon->save();
@@ -90,7 +91,7 @@ class HackathonController extends Controller
         $this->authorize('view', $hackathon);
 
         $hackathon->load(['segments', 'organizers']);
-        
+
         $judgesCount = $hackathon->judges()->count();
         $teamsCount = $hackathon->teams()->count();
         $submissionsCount = $hackathon->submissions()->count();
@@ -103,6 +104,7 @@ class HackathonController extends Controller
         $this->authorize('update', $hackathon);
 
         $hackathon->load('segments');
+
         return view('organizer.hackathons.edit', compact('hackathon'));
     }
 
@@ -118,14 +120,14 @@ class HackathonController extends Controller
             if ($hackathon->logo) {
                 Storage::disk('public')->delete($hackathon->logo);
             }
-            $hackathon->logo = $request->file('logo')->store('hackathons/' . $hackathon->id, 'public');
+            $hackathon->logo = $request->file('logo')->store('hackathons/'.$hackathon->id, 'public');
         }
 
         if ($request->hasFile('banner')) {
             if ($hackathon->banner) {
                 Storage::disk('public')->delete($hackathon->banner);
             }
-            $hackathon->banner = $request->file('banner')->store('hackathons/' . $hackathon->id, 'public');
+            $hackathon->banner = $request->file('banner')->store('hackathons/'.$hackathon->id, 'public');
         }
 
         if ($hackathon->isDirty(['logo', 'banner'])) {
@@ -151,8 +153,8 @@ class HackathonController extends Controller
         if ($hackathon->banner) {
             Storage::disk('public')->delete($hackathon->banner);
         }
-        
-        Storage::disk('public')->deleteDirectory('hackathons/' . $hackathon->id);
+
+        Storage::disk('public')->deleteDirectory('hackathons/'.$hackathon->id);
 
         $hackathon->delete();
 
@@ -165,8 +167,8 @@ class HackathonController extends Controller
         $this->authorize('update', $hackathon);
 
         $request->validate(['email' => 'required|email|exists:users,email']);
-        
-        $user = \App\Models\User::where('email', $request->email)->first();
+
+        $user = User::where('email', $request->email)->first();
 
         if ($user->id === $hackathon->created_by) {
             return back()->with('error', 'This user is the creator of the hackathon.');
@@ -186,7 +188,7 @@ class HackathonController extends Controller
         return back()->with('success', 'Organizer added successfully.');
     }
 
-    public function removeOrganizer(Hackathon $hackathon, \App\Models\User $user): RedirectResponse
+    public function removeOrganizer(Hackathon $hackathon, User $user): RedirectResponse
     {
         $this->authorize('update', $hackathon);
 

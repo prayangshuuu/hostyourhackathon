@@ -1,8 +1,22 @@
 <?php
 
+use App\Http\Helpers\ApiResponse;
+use App\Http\Middleware\CheckBanned;
+use App\Http\Middleware\CheckParticipantAccess;
+use App\Http\Middleware\CheckRegistrationAllowed;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,46 +27,48 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-            'banned' => \App\Http\Middleware\CheckBanned::class,
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'banned' => CheckBanned::class,
+            'registration.allowed' => CheckRegistrationAllowed::class,
+            'participant.access' => CheckParticipantAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->expectsJson()) {
-                return \App\Http\Helpers\ApiResponse::error('Unauthenticated', [], 401);
+                return ApiResponse::error('Unauthenticated', [], 401);
             }
         });
 
-        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e, \Illuminate\Http\Request $request) {
+        $exceptions->render(function (AuthorizationException $e, Request $request) {
             if ($request->expectsJson()) {
-                return \App\Http\Helpers\ApiResponse::error('Forbidden', [], 403);
+                return ApiResponse::error('Forbidden', [], 403);
             }
         });
 
-        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, \Illuminate\Http\Request $request) {
+        $exceptions->render(function (ModelNotFoundException $e, Request $request) {
             if ($request->expectsJson()) {
-                return \App\Http\Helpers\ApiResponse::error('Resource not found', [], 404);
-            }
-        });
-        
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, \Illuminate\Http\Request $request) {
-            if ($request->expectsJson()) {
-                return \App\Http\Helpers\ApiResponse::error('Endpoint not found', [], 404);
+                return ApiResponse::error('Resource not found', [], 404);
             }
         });
 
-        $exceptions->render(function (\Illuminate\Validation\ValidationException $e, \Illuminate\Http\Request $request) {
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->expectsJson()) {
-                return \App\Http\Helpers\ApiResponse::error('Validation failed', $e->errors(), 422);
+                return ApiResponse::error('Endpoint not found', [], 404);
             }
         });
 
-        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, \Illuminate\Http\Request $request) {
+        $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->expectsJson()) {
-                return \App\Http\Helpers\ApiResponse::error('Too many requests', [], 429);
+                return ApiResponse::error('Validation failed', $e->errors(), 422);
+            }
+        });
+
+        $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return ApiResponse::error('Too many requests', [], 429);
             }
         });
     })->create();

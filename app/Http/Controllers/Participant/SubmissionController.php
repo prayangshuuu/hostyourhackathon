@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Participant;
 
+use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Submission\FinalizeSubmissionRequest;
 use App\Http\Requests\Submission\SaveSubmissionRequest;
@@ -26,7 +27,7 @@ class SubmissionController extends Controller
      */
     public function create(Hackathon $hackathon): View|RedirectResponse
     {
-        $this->authorize('create', \App\Models\Submission::class);
+        $this->authorize('create', Submission::class);
         Gate::authorize('submissions.createOnHackathon', $hackathon);
 
         $user = Auth::user();
@@ -58,7 +59,7 @@ class SubmissionController extends Controller
      */
     public function store(SaveSubmissionRequest $request, Hackathon $hackathon): RedirectResponse
     {
-        $this->authorize('create', \App\Models\Submission::class);
+        $this->authorize('create', Submission::class);
         Gate::authorize('submissions.createOnHackathon', $hackathon);
 
         $user = $request->user();
@@ -94,7 +95,9 @@ class SubmissionController extends Controller
 
         $submission->load(['team.members.user', 'hackathon', 'files']);
 
-        return view('submissions.show', compact('submission'));
+        $hackathonEnded = $submission->hackathon?->isEndedOrArchived() ?? false;
+
+        return view('submissions.show', compact('submission', 'hackathonEnded'));
     }
 
     /**
@@ -171,7 +174,7 @@ class SubmissionController extends Controller
     {
         return $team->members()
             ->where('user_id', $user->id)
-            ->where('role', \App\Enums\TeamRole::Leader)
+            ->where('role', TeamRole::Leader)
             ->exists();
     }
 }

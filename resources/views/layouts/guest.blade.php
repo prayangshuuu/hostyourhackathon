@@ -41,6 +41,10 @@
                 </div>
             @endif
 
+            @if (session('info'))
+                <x-alert type="info" :message="session('info')" />
+            @endif
+
             {{ $slot ?? '' }}
             @yield('content')
         </div>

@@ -1,9 +1,18 @@
 {{-- Hackathon Card Component --}}
-@props(['hackathon'])
+@props(['hackathon', 'inactive' => false])
+
+@php
+    $isInactive = filter_var($inactive, FILTER_VALIDATE_BOOLEAN);
+    $statusLabel = match ($hackathon->status->value) {
+        'ended' => 'Ended',
+        'archived' => 'Archived',
+        default => ucfirst($hackathon->status->value),
+    };
+@endphp
 
 <a href="{{ route('hackathons.show', $hackathon) }}" style="
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid {{ $isInactive ? 'rgba(148,163,184,0.55)' : 'var(--border)' }};
     border-radius: var(--radius-lg);
     overflow: hidden;
     display: flex;
@@ -11,15 +20,17 @@
     transition: border-color 150ms ease;
     text-decoration: none;
     color: inherit;
-" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+    opacity: {{ $isInactive ? '0.92' : '1' }};
+" onmouseover="this.style.borderColor='{{ $isInactive ? 'rgba(148,163,184,0.85)' : 'var(--accent)' }}'" onmouseout="this.style.borderColor='{{ $isInactive ? 'rgba(148,163,184,0.55)' : 'var(--border)' }}'">
     {{-- Banner --}}
     @if ($hackathon->banner)
         <img src="{{ Storage::url($hackathon->banner) }}" alt="{{ $hackathon->title }}" style="
             width: 100%; height: 120px; object-fit: cover; display: block;
+            filter: {{ $isInactive ? 'grayscale(35%) brightness(0.97)' : 'none' }};
         ">
     @else
         <div style="
-            width: 100%; height: 120px; background: var(--accent-light);
+            width: 100%; height: 120px; background: {{ $isInactive ? 'var(--surface-alt)' : 'var(--accent-light)' }};
             display: flex; align-items: center; justify-content: center; color: var(--accent);
         ">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
@@ -71,12 +82,14 @@
                     default => 'neutral',
                 };
             @endphp
-            <x-badge :variant="$badgeVariant">{{ ucfirst($hackathon->status->value) }}</x-badge>
+            <x-badge :variant="$badgeVariant">{{ $isInactive ? $statusLabel : ucfirst($hackathon->status->value) }}</x-badge>
 
-            @if ($hackathon->registration_closes_at && $hackathon->registration_closes_at->isFuture())
+            @if (! $isInactive && $hackathon->registration_closes_at && $hackathon->registration_closes_at->isFuture())
                 <span style="font-size: 12px; color: var(--text-muted);">Reg. closes {{ $hackathon->registration_closes_at->format('M d') }}</span>
-            @elseif ($hackathon->submission_opens_at && $hackathon->submission_opens_at->isFuture())
+            @elseif (! $isInactive && $hackathon->submission_opens_at && $hackathon->submission_opens_at->isFuture())
                 <span style="font-size: 12px; color: var(--text-muted);">Submissions open</span>
+            @elseif ($isInactive)
+                <span style="font-size: 12px; color: var(--text-muted);">View details</span>
             @endif
         </div>
     </div>

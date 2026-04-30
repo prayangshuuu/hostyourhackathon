@@ -39,6 +39,9 @@
                 @if (session('warning'))
                     <x-alert type="warning" :message="session('warning')" />
                 @endif
+                @if (session('info'))
+                    <x-alert type="info" :message="session('info')" />
+                @endif
 
                 @yield('content')
                 {{ $slot ?? '' }}

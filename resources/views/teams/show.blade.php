@@ -3,6 +3,12 @@
 @section('title', $team->name)
 
 @section('content')
+    @if ($teamManagementLocked)
+        <div role="status" style="margin-bottom: 20px; padding: 14px 16px; background: var(--surface-alt, #f8fafc); border: 1px solid var(--color-border-subtle, var(--border)); border-radius: var(--radius-md); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+            This hackathon has ended. Team management is no longer available.
+        </div>
+    @endif
+
     {{-- Page Header --}}
     <div class="page-header">
         <div class="page-header-breadcrumb">
@@ -19,7 +25,7 @@
                 <h1 class="text-page-title">{{ $team->name }}</h1>
                 <p class="page-header-description">{{ $team->hackathon->title }}{{ $team->segment ? ' · ' . $team->segment->name : '' }}</p>
             </div>
-            @if ($isLeader)
+            @if ($isLeader && ! $teamManagementLocked)
                 <a href="#" onclick="document.getElementById('rename-section').style.display = document.getElementById('rename-section').style.display === 'none' ? 'block' : 'none'; return false;"
                    class="btn btn-secondary btn-sm">Rename</a>
             @endif
@@ -27,7 +33,7 @@
     </div>
 
     {{-- Inline rename form (hidden by default) --}}
-    @if ($isLeader)
+    @if ($isLeader && ! $teamManagementLocked)
         <div id="rename-section" style="display:none; margin-bottom:24px;">
             <form method="POST" action="{{ route('teams.update', $team) }}" style="display:flex; gap:10px; max-width:480px;">
                 @csrf @method('PUT')
@@ -50,7 +56,9 @@
                             <th>Member</th>
                             <th>Role</th>
                             <th>Joined</th>
-                            <th style="text-align:right; width:80px;">Actions</th>
+                            @if (! $teamManagementLocked)
+                                <th style="text-align:right; width:80px;">Actions</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -72,28 +80,28 @@
                                 <td style="color:var(--color-text-secondary);">
                                     {{ $member->joined_at->format('M d, Y') }}
                                 </td>
-                                <td>
-                                    <div class="inline-actions" style="justify-content:flex-end;">
-                                        @if ($isLeader && $member->role->value !== 'leader')
-                                            {{-- Leader can kick members --}}
-                                            <form method="POST" action="{{ route('teams.members.remove', [$team, $member->user]) }}"
-                                                  onsubmit="return confirm('Remove {{ $member->user->name }} from the team?')" style="display:inline;">
-                                                @csrf
-                                                <button type="submit" class="btn-icon" aria-label="Remove {{ $member->user->name }}" title="Remove"
+                                @if (! $teamManagementLocked)
+                                    <td>
+                                        <div class="inline-actions" style="justify-content:flex-end;">
+                                            @if ($isLeader && $member->role->value !== 'leader')
+                                                <form method="POST" action="{{ route('teams.members.remove', [$team, $member->user]) }}"
+                                                      onsubmit="return confirm('Remove {{ $member->user->name }} from the team?')" style="display:inline;">
+                                                    @csrf
+                                                    <button type="submit" class="btn-icon" aria-label="Remove {{ $member->user->name }}" title="Remove"
+                                                            style="color:var(--color-danger);">
+                                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8h8" stroke="currentColor" stroke-width="1.33" stroke-linecap="round"/></svg>
+                                                    </button>
+                                                </form>
+                                            @elseif ($member->user_id === Auth::id() && $member->role->value !== 'leader')
+                                                <button type="button" class="btn-icon" aria-label="Leave team" title="Leave"
+                                                        onclick="document.getElementById('modal-leave').classList.add('is-open')"
                                                         style="color:var(--color-danger);">
-                                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8h8" stroke="currentColor" stroke-width="1.33" stroke-linecap="round"/></svg>
+                                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 14H3.333A.667.667 0 0 1 2.667 13.333V2.667A.667.667 0 0 1 3.333 2H6m4.667 9.333L14 8m0 0-3.333-3.333M14 8H6" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                                 </button>
-                                            </form>
-                                        @elseif ($member->user_id === Auth::id() && $member->role->value !== 'leader')
-                                            {{-- Non-leader member can leave --}}
-                                            <button type="button" class="btn-icon" aria-label="Leave team" title="Leave"
-                                                    onclick="document.getElementById('modal-leave').classList.add('is-open')"
-                                                    style="color:var(--color-danger);">
-                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 14H3.333A.667.667 0 0 1 2.667 13.333V2.667A.667.667 0 0 1 3.333 2H6m4.667 9.333L14 8m0 0-3.333-3.333M14 8H6" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                            </button>
-                                        @endif
-                                    </div>
-                                </td>
+                                            @endif
+                                        </div>
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -101,7 +109,7 @@
             </div>
 
             {{-- Danger Zone --}}
-            @if ($isMember)
+            @if ($isMember && ! $teamManagementLocked)
                 <div class="danger-zone">
                     <div class="danger-zone-title">Danger Zone</div>
                     @if ($isLeader)
@@ -123,28 +131,30 @@
 
         {{-- Right: Sidebar Card --}}
         <div>
-            {{-- Invite Link Card --}}
-            <div class="card section-spacing">
-                <div class="card-header">
-                    <h3 class="text-card-title">Invite Link</h3>
-                </div>
-                <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:12px;">
-                    Share this link to invite teammates.
-                </p>
-                <div style="display:flex; gap:6px;">
-                    <label for="invite-link" class="sr-only">Invite link</label>
-                    <input type="text" id="invite-link" class="form-input" readonly
-                           value="{{ route('teams.join', $team->invite_code) }}"
-                           style="font-size:var(--font-size-xs);">
-                    <div class="tooltip-trigger">
-                        <button type="button" class="btn-icon" id="btn-copy-invite" aria-label="Copy invite link" title="Copy"
-                                onclick="copyInviteLink()">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.667 5.333H12a.667.667 0 0 1 .667.667v7.333a.667.667 0 0 1-.667.667H5.333a.667.667 0 0 1-.666-.667V12M10.667 2H4a.667.667 0 0 0-.667.667V10c0 .368.299.667.667.667h6.667A.667.667 0 0 0 11.333 10V2.667A.667.667 0 0 0 10.667 2Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </button>
-                        <span class="tooltip-text" id="tooltip-copied">Copied!</span>
+            @if (! $teamManagementLocked)
+                {{-- Invite Link Card --}}
+                <div class="card section-spacing">
+                    <div class="card-header">
+                        <h3 class="text-card-title">Invite Link</h3>
+                    </div>
+                    <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:12px;">
+                        Share this link to invite teammates.
+                    </p>
+                    <div style="display:flex; gap:6px;">
+                        <label for="invite-link" class="sr-only">Invite link</label>
+                        <input type="text" id="invite-link" class="form-input" readonly
+                               value="{{ route('teams.join', $team->invite_code) }}"
+                               style="font-size:var(--font-size-xs);">
+                        <div class="tooltip-trigger">
+                            <button type="button" class="btn-icon" id="btn-copy-invite" aria-label="Copy invite link" title="Copy"
+                                    onclick="copyInviteLink()">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.667 5.333H12a.667.667 0 0 1 .667.667v7.333a.667.667 0 0 1-.667.667H5.333a.667.667 0 0 1-.666-.667V12M10.667 2H4a.667.667 0 0 0-.667.667V10c0 .368.299.667.667.667h6.667A.667.667 0 0 0 11.333 10V2.667A.667.667 0 0 0 10.667 2Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <span class="tooltip-text" id="tooltip-copied">Copied!</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
 
             {{-- Team Info --}}
             <div class="card">
@@ -176,7 +186,7 @@
     </div>
 
     {{-- Leave Modal --}}
-    @if ($isMember && !$isLeader)
+    @if ($isMember && ! $isLeader && ! $teamManagementLocked)
         @php
             $selfMember = $team->members->firstWhere('user_id', Auth::id());
         @endphp
@@ -196,7 +206,7 @@
     @endif
 
     {{-- Disband Modal --}}
-    @if ($isLeader)
+    @if ($isLeader && ! $teamManagementLocked)
         <div class="modal-overlay" id="modal-disband" onclick="if(event.target===this) this.classList.remove('is-open')">
             <div class="modal-box">
                 <h3 class="modal-title">Disband Team</h3>
@@ -213,17 +223,19 @@
     @endif
 @endsection
 
-@push('scripts')
-<script>
-    function copyInviteLink() {
-        const input = document.getElementById('invite-link');
-        const tooltip = document.getElementById('tooltip-copied');
-        navigator.clipboard.writeText(input.value).then(function () {
-            tooltip.classList.add('is-visible');
-            setTimeout(function () {
-                tooltip.classList.remove('is-visible');
-            }, 1500);
-        });
-    }
-</script>
-@endpush
+@if (! $teamManagementLocked)
+    @push('scripts')
+    <script>
+        function copyInviteLink() {
+            const input = document.getElementById('invite-link');
+            const tooltip = document.getElementById('tooltip-copied');
+            navigator.clipboard.writeText(input.value).then(function () {
+                tooltip.classList.add('is-visible');
+                setTimeout(function () {
+                    tooltip.classList.remove('is-visible');
+                }, 1500);
+            });
+        }
+    </script>
+    @endpush
+@endif

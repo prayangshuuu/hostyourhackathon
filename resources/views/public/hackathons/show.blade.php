@@ -64,7 +64,15 @@
             <x-badge :variant="$badgeVariant">{{ ucfirst($hackathon->status->value) }}</x-badge>
 
             @guest
-                <x-button href="{{ route('login') }}" variant="secondary" size="md">Sign in to Register</x-button>
+                @if ($canRegisterParticipation)
+                    <x-button href="{{ route('login') }}" variant="secondary" size="md">Sign in to Register</x-button>
+                @elseif ($hackathon->isEndedOrArchived())
+                    <span style="
+                        padding: 8px 16px; font-size: 14px; font-weight: 500;
+                        background: var(--surface-alt); color: var(--text-muted);
+                        border: 1px solid var(--border); border-radius: var(--radius-md);
+                    ">{{ $hackathon->status->value === 'archived' ? 'Archived' : 'Ended' }}</span>
+                @endif
             @else
                 @if ($isRegistered)
                     <span style="
@@ -76,8 +84,14 @@
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.333A6.667 6.667 0 1 0 14.667 8 6.674 6.674 0 0 0 8 1.333Zm3.06 4.94-3.667 4a.667.667 0 0 1-.986 0L4.94 8.607a.667.667 0 1 1 .986-.9l.96 1.046 3.174-3.46a.667.667 0 0 1 .986.9l.014.02Z"/></svg>
                         Registered
                     </span>
-                @elseif ($registrationOpen)
+                @elseif ($canRegisterParticipation && $registrationOpen)
                     <x-button href="{{ route('teams.create', $hackathon) }}" variant="primary" size="md">Register Now</x-button>
+                @elseif (!$canRegisterParticipation)
+                    <span style="
+                        padding: 8px 16px; font-size: 14px; font-weight: 500;
+                        background: var(--surface-alt); color: var(--text-muted);
+                        border: 1px solid var(--border); border-radius: var(--radius-md);
+                    ">Hackathon ended</span>
                 @else
                     <span style="
                         padding: 8px 16px; font-size: 14px; font-weight: 500;

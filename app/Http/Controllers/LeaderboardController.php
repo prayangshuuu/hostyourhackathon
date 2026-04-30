@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RoleEnum;
 use App\Models\Hackathon;
+use App\Models\Judge;
+use App\Models\User;
 use App\Services\ScoringService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -15,22 +18,55 @@ class LeaderboardController extends Controller
 
     /**
      * Show the leaderboard for a hackathon.
+     *
+     * leaderboard_public=false: requires auth — super admin, hackathon organizers, or judges.
      */
     public function show(Hackathon $hackathon): View
     {
         $user = Auth::user();
 
-        $isOrganizer = $hackathon->created_by === $user->id
-            || $hackathon->organizers()->where('user_id', $user->id)->exists()
-            || $user->hasRole('super_admin');
+        $canViewData = $this->leaderboardPayloadVisibleTo($user, $hackathon);
 
-        // If leaderboard is not public and user is not organizer/admin, restrict
-        $canView = $hackathon->leaderboard_public || $isOrganizer;
+        $leaderboardEntries = collect();
+        if ($canViewData) {
+            $leaderboardEntries = $this->scoringService->getLeaderboard($hackathon)->map(function ($submission) {
+                return (object) [
+                    'team' => $submission->team,
+                    'segment' => $submission->team?->segment,
+                    'project_title' => $submission->title,
+                    'total_score' => (float) ($submission->scores_sum_score ?? 0),
+                ];
+            });
+        }
 
-        $submissions = $canView
-            ? $this->scoringService->getLeaderboard($hackathon)
-            : collect();
+        return view('leaderboard.show', [
+            'hackathon' => $hackathon,
+            'leaderboard' => $leaderboardEntries,
+            'canView' => $canViewData,
+        ]);
+    }
 
-        return view('leaderboard.show', compact('hackathon', 'submissions', 'canView', 'isOrganizer'));
+    protected function leaderboardPayloadVisibleTo(?User $user, Hackathon $hackathon): bool
+    {
+        if ($hackathon->leaderboard_public) {
+            return true;
+        }
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
+            return true;
+        }
+
+        if ($hackathon->isOwnedByUser($user)) {
+            return true;
+        }
+
+        return Judge::query()
+            ->where('hackathon_id', $hackathon->id)
+            ->where('user_id', $user->id)
+            ->exists();
     }
 }

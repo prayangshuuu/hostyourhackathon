@@ -82,7 +82,9 @@ class TeamController extends Controller
         $isLeader = $this->teamService->isLeader($team, Auth::user());
         $isMember = $team->members->contains('user_id', Auth::id());
 
-        return view('teams.show', compact('team', 'isLeader', 'isMember'));
+        $teamManagementLocked = $team->hackathon->isEndedOrArchived();
+
+        return view('teams.show', compact('team', 'isLeader', 'isMember', 'teamManagementLocked'));
     }
 
     /**

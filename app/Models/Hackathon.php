@@ -80,6 +80,11 @@ class Hackathon extends Model
         return $query->where('status', $status);
     }
 
+    public function isEndedOrArchived(): bool
+    {
+        return $this->status === HackathonStatus::Ended || $this->status === HackathonStatus::Archived;
+    }
+
     public function isRegistrationOpen(): bool
     {
         $now = now();

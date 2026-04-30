@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Leaderboard - ' . $hackathon->title)
+@section('title', 'Leaderboard — ' . $hackathon->title)
 
 @section('content')
     <div class="page-header" style="text-align: center; margin-top: 40px; margin-bottom: 40px;">
@@ -8,7 +8,7 @@
         <p class="text-helper" style="font-size: 16px; margin-top: 8px;">{{ $hackathon->title }}</p>
     </div>
 
-    @if(!$hackathon->leaderboard_public && !(Auth::check() && (Auth::user()->hasRole('super_admin') || Auth::user()->hasRole('organizer'))))
+    @if (! $canView)
         <div style="max-width: 600px; margin: 0 auto; text-align: center;">
             <x-card>
                 <div style="padding: 40px 20px;">
@@ -34,7 +34,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($leaderboard ?? [] as $index => $entry)
+                        @forelse($leaderboard as $index => $entry)
                             @php
                                 $rank = $index + 1;
                                 $rankStyle = '';
@@ -50,7 +50,7 @@
                             @endphp
                             <tr>
                                 <td style="text-align: center; {{ $rankStyle }}">
-                                    @if($rank <= 3)
+                                    @if ($rank <= 3)
                                         <div style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: inherit;">
                                             {{ $rank }}
                                         </div>

@@ -10,7 +10,6 @@ use App\Http\Controllers\HackathonController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Judge\JudgeTeamController;
 use App\Http\Controllers\Judge\ScoreController;
-use App\Http\Controllers\JudgeDashboardController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Organizer\AnnouncementController;
@@ -21,7 +20,9 @@ use App\Http\Controllers\Organizer\OrganizerSubmissionController;
 use App\Http\Controllers\Organizer\OrganizerTeamController;
 use App\Http\Controllers\Organizer\ScoringCriteriaController;
 use App\Http\Controllers\Organizer\SegmentController;
+use App\Http\Controllers\Participant\ParticipantAnnouncementController;
 use App\Http\Controllers\Participant\SubmissionController;
+use App\Http\Controllers\Participant\SubmissionFileController;
 use App\Http\Controllers\Participant\TeamController;
 use App\Http\Controllers\Participant\TeamInviteController;
 use App\Http\Controllers\Participant\TeamMemberController;
@@ -32,6 +33,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/hackathons', [HackathonController::class, 'publicIndex'])->name('hackathons.index');
 Route::get('/h/{slug}', [HackathonController::class, 'publicShow'])->name('hackathons.show');
+Route::get('/hackathons/{hackathon}/leaderboard', [LeaderboardController::class, 'show'])->name('leaderboard.show');
+
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 
@@ -53,10 +56,11 @@ Route::middleware(['auth', 'banned'])->group(function () {
 // Submission detail (participants, judges, mentors, super admin)
 Route::middleware(['auth', 'banned', 'verified', 'role:participant|judge|mentor|super_admin'])->group(function () {
     Route::get('/submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
+    Route::get('/submissions/{submission}/files/{submissionFile}', [SubmissionFileController::class, 'download'])->name('submissions.files.download');
 });
 
 // Participant routes
-Route::middleware(['auth', 'banned', 'verified', 'role:participant|super_admin'])->group(function () {
+Route::middleware(['auth', 'banned', 'verified', 'role:participant|super_admin', 'participant.access'])->group(function () {
     Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
     Route::get('/hackathons/{hackathon}/teams/create', [TeamController::class, 'create'])->name('teams.create');
     Route::post('/hackathons/{hackathon}/teams', [TeamController::class, 'store'])->name('teams.store');
@@ -77,12 +81,12 @@ Route::middleware(['auth', 'banned', 'verified', 'role:participant|super_admin']
     Route::post('/submissions/{submission}/finalize', [SubmissionController::class, 'finalize'])->name('submissions.finalize');
 
     // File uploads
-    Route::post('/submissions/{submission}/files', [\App\Http\Controllers\Participant\SubmissionFileController::class, 'store'])->name('submissions.files.store');
-    Route::delete('/submission-files/{submissionFile}', [\App\Http\Controllers\Participant\SubmissionFileController::class, 'destroy'])->name('submissions.files.destroy');
+    Route::post('/submissions/{submission}/files', [SubmissionFileController::class, 'store'])->name('submissions.files.store');
+    Route::delete('/submission-files/{submissionFile}', [SubmissionFileController::class, 'destroy'])->name('submissions.files.destroy');
 
     // Announcements
-    Route::get('/hackathons/{hackathon}/announcements', [\App\Http\Controllers\Participant\ParticipantAnnouncementController::class, 'index'])->name('participant.announcements.index');
-    Route::get('/hackathons/{hackathon}/announcements/{announcement}', [\App\Http\Controllers\Participant\ParticipantAnnouncementController::class, 'show'])->name('participant.announcements.show');
+    Route::get('/hackathons/{hackathon}/announcements', [ParticipantAnnouncementController::class, 'index'])->name('participant.announcements.index');
+    Route::get('/hackathons/{hackathon}/announcements/{announcement}', [ParticipantAnnouncementController::class, 'show'])->name('participant.announcements.show');
 });
 
 // Organizer routes
@@ -119,14 +123,12 @@ Route::middleware(['auth', 'banned', 'verified', 'role:organizer|super_admin'])
 
 // Judge routes
 Route::middleware(['auth', 'banned', 'verified', 'role:judge|super_admin'])->group(function () {
-    Route::get('/judge/dashboard', [\App\Http\Controllers\Judge\JudgeDashboardController::class, 'index'])->name('judge.dashboard');
+    Route::get('/judge/dashboard', [App\Http\Controllers\Judge\JudgeDashboardController::class, 'index'])->name('judge.dashboard');
     Route::get('/judge/submissions/{submission}/score', [ScoreController::class, 'create'])->name('judge.score.create');
     Route::post('/judge/submissions/{submission}/score', [ScoreController::class, 'store'])->name('judge.score.store');
     Route::put('/judge/submissions/{submission}/score', [ScoreController::class, 'update'])->name('judge.score.update');
 
     Route::post('/judge/teams/{team}/ban', [JudgeTeamController::class, 'ban'])->name('judge.teams.ban');
-
-    Route::get('/hackathons/{hackathon}/leaderboard', [LeaderboardController::class, 'show'])->name('leaderboard.show');
 });
 
 // Admin routes
