@@ -80,9 +80,9 @@
                         <td><span class="badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
                         <td>
                             @if ($scoreCount >= $criteriaCount && $scoreCount > 0)
-                                <a href="{{ route('judging.score', $submission) }}" class="btn btn-secondary btn-sm">Edit Score</a>
+                                <a href="{{ route('judge.score.create', $submission) }}" class="btn btn-secondary btn-sm">Edit Score</a>
                             @else
-                                <a href="{{ route('judging.score', $submission) }}" class="btn btn-primary btn-sm">Score</a>
+                                <a href="{{ route('judge.score.create', $submission) }}" class="btn btn-primary btn-sm">Score</a>
                             @endif
                         </td>
                     </tr>

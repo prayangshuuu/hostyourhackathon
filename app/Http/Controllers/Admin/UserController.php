@@ -13,6 +13,8 @@ class UserController extends Controller
 {
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', User::class);
+
         $query = User::withTrashed()->with('roles');
 
         if ($role = $request->get('role')) {
@@ -39,6 +41,8 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        $this->authorize('view', $user);
+
         $user->load('roles');
         $roles = RoleEnum::values();
 
@@ -47,6 +51,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        $this->authorize('changeRole', $user);
+
         $request->validate(['role' => 'required|string|in:' . implode(',', RoleEnum::values())]);
 
         $user->syncRoles([$request->role]);
@@ -58,6 +64,8 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
+        $this->authorize('delete', $user);
+
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot delete yourself.');
         }
@@ -75,6 +83,7 @@ class UserController extends Controller
     public function restore(int $id): RedirectResponse
     {
         $user = User::withTrashed()->findOrFail($id);
+        $this->authorize('update', $user);
         $user->restore();
 
         return redirect()
@@ -87,6 +96,8 @@ class UserController extends Controller
      */
     public function impersonate(User $user): RedirectResponse
     {
+        $this->authorize('impersonate', $user);
+
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot impersonate yourself.');
         }

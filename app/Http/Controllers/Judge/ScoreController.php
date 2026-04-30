@@ -23,6 +23,8 @@ class ScoreController extends Controller
      */
     public function create(Submission $submission): View
     {
+        $this->authorize('view', $submission);
+
         $user = Auth::user();
         $submission->load(['team.segment', 'hackathon.criteria', 'files']);
 
@@ -48,6 +50,8 @@ class ScoreController extends Controller
      */
     public function store(Request $request, Submission $submission): RedirectResponse
     {
+        $this->authorize('view', $submission);
+
         $user = Auth::user();
 
         $judge = Judge::where('user_id', $user->id)

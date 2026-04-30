@@ -9,6 +9,7 @@ use App\Models\Team;
 use App\Services\TeamService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class TeamController extends Controller
@@ -22,6 +23,8 @@ class TeamController extends Controller
      */
     public function index(): View
     {
+        $this->authorize('viewAny', Team::class);
+
         $teams = Team::whereHas('members', fn ($q) => $q->where('user_id', Auth::id()))
             ->with(['hackathon', 'segment', 'members'])
             ->withCount('members')
@@ -36,6 +39,9 @@ class TeamController extends Controller
      */
     public function create(Hackathon $hackathon): View
     {
+        $this->authorize('create', Team::class);
+        Gate::authorize('teams.createOnHackathon', $hackathon);
+
         $hackathon->load('segments');
 
         return view('teams.create', compact('hackathon'));
@@ -46,6 +52,9 @@ class TeamController extends Controller
      */
     public function store(CreateTeamRequest $request, Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('create', Team::class);
+        Gate::authorize('teams.createOnHackathon', $hackathon);
+
         try {
             $team = $this->teamService->createTeam(
                 $hackathon,
@@ -66,6 +75,8 @@ class TeamController extends Controller
      */
     public function show(Team $team): View
     {
+        $this->authorize('view', $team);
+
         $team->load(['hackathon', 'segment', 'members.user', 'creator']);
 
         $isLeader = $this->teamService->isLeader($team, Auth::user());
@@ -79,6 +90,8 @@ class TeamController extends Controller
      */
     public function update(CreateTeamRequest $request, Team $team): RedirectResponse
     {
+        $this->authorize('update', $team);
+
         try {
             $this->teamService->updateName($team, $request->user(), $request->validated('name'));
         } catch (\InvalidArgumentException $e) {
@@ -93,6 +106,8 @@ class TeamController extends Controller
      */
     public function destroy(Team $team): RedirectResponse
     {
+        $this->authorize('delete', $team);
+
         try {
             $this->teamService->disbandTeam($team, Auth::user());
         } catch (\InvalidArgumentException $e) {

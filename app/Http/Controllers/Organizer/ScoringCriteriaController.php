@@ -21,6 +21,8 @@ class ScoringCriteriaController extends Controller
      */
     public function index(Hackathon $hackathon): View
     {
+        $this->authorize('update', $hackathon);
+
         $hackathon->load('criteria');
 
         return view('organizer.criteria', compact('hackathon'));
@@ -31,6 +33,8 @@ class ScoringCriteriaController extends Controller
      */
     public function store(Request $request, Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('update', $hackathon);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -47,6 +51,8 @@ class ScoringCriteriaController extends Controller
      */
     public function update(Request $request, Hackathon $hackathon, ScoringCriterion $criterion): RedirectResponse
     {
+        $this->authorize('update', $hackathon);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -63,6 +69,8 @@ class ScoringCriteriaController extends Controller
      */
     public function destroy(Hackathon $hackathon, ScoringCriterion $criterion): RedirectResponse
     {
+        $this->authorize('update', $hackathon);
+
         $this->scoringService->deleteCriterion($criterion);
 
         return back()->with('success', 'Criterion removed.');

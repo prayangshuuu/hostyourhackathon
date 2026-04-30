@@ -1,0 +1,56 @@
+@extends('layouts.app')
+
+@section('title', 'Teams')
+
+@section('content')
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h1 class="text-page-title">Teams</h1>
+    </div>
+
+    @if (session('success'))
+        <div style="margin-bottom: 24px;"><x-alert type="success" :message="session('success')" /></div>
+    @endif
+    @if (session('error'))
+        <div style="margin-bottom: 24px;"><x-alert type="error" :message="session('error')" /></div>
+    @endif
+
+    <form method="GET" action="{{ route('organizer.teams.index') }}" class="card" style="padding: 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: flex-end;">
+        <div style="flex: 1;">
+            <label for="hackathon" class="form-label">Hackathon</label>
+            <select name="hackathon" id="hackathon" class="form-input" onchange="this.form.submit()">
+                <option value="">All</option>
+                @foreach ($hackathons as $h)
+                    <option value="{{ $h->id }}" @selected(request('hackathon') == $h->id)>{{ $h->title }}</option>
+                @endforeach
+            </select>
+        </div>
+    </form>
+
+    <div class="card" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Team</th>
+                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Hackathon</th>
+                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Members</th>
+                    <th style="text-align: right; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($teams as $team)
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 12px; font-weight: 500;">{{ $team->name }}</td>
+                        <td style="padding: 12px; color: var(--text-secondary);">{{ $team->hackathon->title }}</td>
+                        <td style="padding: 12px; color: var(--text-secondary);">{{ $team->members_count }}</td>
+                        <td style="padding: 12px; text-align: right;">
+                            <a href="{{ route('organizer.teams.show', $team) }}" style="color: var(--accent); font-weight: 500; text-decoration: none;">Manage</a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" style="padding: 32px; text-align: center; color: var(--text-secondary);">No teams found.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+        <div style="padding: 16px;">{{ $teams->links() }}</div>
+    </div>
+@endsection

@@ -121,6 +121,16 @@ class SubmissionService
         ]);
     }
 
+    public function disqualify(Submission $submission, User $user, string $reason): void
+    {
+        $submission->update([
+            'disqualified' => true,
+            'disqualified_reason' => $reason,
+            'disqualified_by' => $user->id,
+            'disqualified_at' => now(),
+        ]);
+    }
+
     public function storeFile(Submission $submission, UploadedFile $file): SubmissionFile
     {
         $this->assertEditable($submission);

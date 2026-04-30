@@ -24,12 +24,14 @@
                     <span class="badge badge-draft">Draft</span>
                 @endif
             </div>
-            @if ($isOrganizer && $submission->isFinal())
-                <form method="POST" action="{{ route('submissions.reopen', $submission) }}">
-                    @csrf
-                    <button type="submit" class="btn btn-secondary" id="btn-reopen">Re-open Submission</button>
-                </form>
-            @endif
+            @can('reopen', $submission)
+                @if ($submission->isFinal())
+                    <form method="POST" action="{{ route('organizer.submissions.reopen', $submission) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary" id="btn-reopen">Re-open Submission</button>
+                    </form>
+                @endif
+            @endcan
         </div>
     </div>
 

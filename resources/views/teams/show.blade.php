@@ -76,9 +76,9 @@
                                     <div class="inline-actions" style="justify-content:flex-end;">
                                         @if ($isLeader && $member->role->value !== 'leader')
                                             {{-- Leader can kick members --}}
-                                            <form method="POST" action="{{ route('teams.members.destroy', [$team, $member]) }}"
+                                            <form method="POST" action="{{ route('teams.members.remove', [$team, $member->user]) }}"
                                                   onsubmit="return confirm('Remove {{ $member->user->name }} from the team?')" style="display:inline;">
-                                                @csrf @method('DELETE')
+                                                @csrf
                                                 <button type="submit" class="btn-icon" aria-label="Remove {{ $member->user->name }}" title="Remove"
                                                         style="color:var(--color-danger);">
                                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8h8" stroke="currentColor" stroke-width="1.33" stroke-linecap="round"/></svg>
@@ -186,8 +186,8 @@
                 <p class="modal-body">Are you sure you want to leave <strong>{{ $team->name }}</strong>? You can join a different team for this hackathon afterward.</p>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-leave').classList.remove('is-open')">Cancel</button>
-                    <form method="POST" action="{{ route('teams.members.destroy', [$team, $selfMember]) }}" style="display:inline;">
-                        @csrf @method('DELETE')
+                    <form method="POST" action="{{ route('teams.members.remove', [$team, $selfMember->user]) }}" style="display:inline;">
+                        @csrf
                         <button type="submit" class="btn btn-danger btn-sm">Leave Team</button>
                     </form>
                 </div>

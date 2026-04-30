@@ -51,10 +51,16 @@
         <div class="card" style="padding: 20px;">
             <div style="font-size: 28px; font-weight: 600; color: var(--text-primary);">{{ $teamsCount }}</div>
             <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Registered Teams</div>
+            <div style="margin-top: 12px;">
+                <a href="{{ route('organizer.teams.index', ['hackathon' => $hackathon->id]) }}" style="font-size: 13px; color: var(--accent); font-weight: 500; text-decoration: none;">View all teams</a>
+            </div>
         </div>
         <div class="card" style="padding: 20px;">
             <div style="font-size: 28px; font-weight: 600; color: var(--text-primary);">{{ $submissionsCount }}</div>
             <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Submissions</div>
+            <div style="margin-top: 12px;">
+                <a href="{{ route('organizer.submissions.index', ['hackathon' => $hackathon->id]) }}" style="font-size: 13px; color: var(--accent); font-weight: 500; text-decoration: none;">View all submissions</a>
+            </div>
         </div>
         <div class="card" style="padding: 20px;">
             <div style="font-size: 28px; font-weight: 600; color: var(--text-primary);">{{ $judgesCount }}</div>

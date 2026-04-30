@@ -20,6 +20,8 @@ class HackathonStatusController extends Controller
      */
     public function update(TransitionHackathonStatusRequest $request, Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('changeStatus', $hackathon);
+
         $newStatus = HackathonStatus::from($request->validated('status'));
 
         try {

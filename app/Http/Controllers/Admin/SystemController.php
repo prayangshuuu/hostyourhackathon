@@ -11,11 +11,15 @@ class SystemController extends Controller
 {
     public function index(): View
     {
+        abort_unless(auth()->user()?->can('settings.view'), 403);
+
         return view('admin.settings.index');
     }
 
     public function update(Request $request): RedirectResponse
     {
+        abort_unless($request->user()->can('settings.update'), 403);
+
         $request->validate([
             'app_name' => 'required|string|max:255',
             'app_url' => 'required|url|max:255',
@@ -59,6 +63,8 @@ class SystemController extends Controller
      */
     public function clearCache(): \Illuminate\Http\JsonResponse
     {
+        abort_unless(auth()->user()?->can('cache.clear'), 403);
+
         \Artisan::call('optimize:clear');
         return response()->json(['message' => 'Cache cleared successfully.']);
     }
@@ -68,6 +74,8 @@ class SystemController extends Controller
      */
     public function testEmail(Request $request): \Illuminate\Http\JsonResponse
     {
+        abort_unless($request->user()->can('settings.update'), 403);
+
         try {
             \Illuminate\Support\Facades\Mail::raw('This is a test email from ' . config('app.name'), function ($message) use ($request) {
                 $message->to($request->user()->email)

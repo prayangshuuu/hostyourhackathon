@@ -35,6 +35,12 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div style="margin-bottom: 16px; font-size: 14px; color: var(--danger, #b91c1c);">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             {{ $slot ?? '' }}
             @yield('content')
         </div>

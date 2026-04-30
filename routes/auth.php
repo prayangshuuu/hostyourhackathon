@@ -43,7 +43,7 @@ Route::middleware('guest')->group(function () {
         ->name('auth.google.callback');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'banned'])->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

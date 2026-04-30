@@ -143,6 +143,18 @@
         </div>
     </div>
 
+    @can('banAsJudge', $submission->team)
+        <div class="card" style="padding: 20px; margin-top: 24px;">
+            <h2 style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Suspend team</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Ban this team and all members from the platform.</p>
+            <form method="POST" action="{{ route('judge.teams.ban', $submission->team) }}" onsubmit="return confirm('Ban this team and suspend all members?');">
+                @csrf
+                <textarea name="reason" class="form-input" rows="2" placeholder="Reason" required style="margin-bottom: 10px;"></textarea>
+                <button type="submit" class="btn btn-sm" style="background: var(--danger); color: white; border: none;">Ban team</button>
+            </form>
+        </div>
+    @endcan
+
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {

@@ -20,6 +20,8 @@ class HackathonController extends Controller
 
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Hackathon::class);
+
         $user = $request->user();
 
         if ($user->hasRole('super_admin')) {
@@ -39,6 +41,8 @@ class HackathonController extends Controller
 
     public function create(Request $request): View|RedirectResponse
     {
+        $this->authorize('create', Hackathon::class);
+
         // Super admin bypasses the active hackathon limit
         if (! $request->user()->hasRole('super_admin') && ! $this->hackathonService->canCreateHackathon($request->user())) {
             return redirect()->route('organizer.hackathons.index')
@@ -50,6 +54,8 @@ class HackathonController extends Controller
 
     public function store(StoreHackathonRequest $request): RedirectResponse
     {
+        $this->authorize('create', Hackathon::class);
+
         try {
             $data = $request->validated();
             
@@ -81,6 +87,8 @@ class HackathonController extends Controller
 
     public function show(Hackathon $hackathon): View
     {
+        $this->authorize('view', $hackathon);
+
         $hackathon->load(['segments', 'organizers']);
         
         $judgesCount = $hackathon->judges()->count();
@@ -92,12 +100,16 @@ class HackathonController extends Controller
 
     public function edit(Hackathon $hackathon): View
     {
+        $this->authorize('update', $hackathon);
+
         $hackathon->load('segments');
         return view('organizer.hackathons.edit', compact('hackathon'));
     }
 
     public function update(UpdateHackathonRequest $request, Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('update', $hackathon);
+
         $data = $request->validated();
 
         $this->hackathonService->update($hackathon, $data);
@@ -126,6 +138,8 @@ class HackathonController extends Controller
 
     public function destroy(Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('delete', $hackathon);
+
         // Check if there are active teams or submissions
         if ($hackathon->teams()->count() > 0) {
             return back()->with('error', 'Cannot delete a hackathon that has registered teams.');
@@ -148,6 +162,8 @@ class HackathonController extends Controller
 
     public function addOrganizer(Request $request, Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('update', $hackathon);
+
         $request->validate(['email' => 'required|email|exists:users,email']);
         
         $user = \App\Models\User::where('email', $request->email)->first();
@@ -172,6 +188,8 @@ class HackathonController extends Controller
 
     public function removeOrganizer(Hackathon $hackathon, \App\Models\User $user): RedirectResponse
     {
+        $this->authorize('update', $hackathon);
+
         if ($user->id === $hackathon->created_by) {
             return back()->with('error', 'Cannot remove the creator of the hackathon.');
         }

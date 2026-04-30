@@ -16,6 +16,8 @@ class SegmentController extends Controller
      */
     public function store(StoreSegmentRequest $request, Hackathon $hackathon)
     {
+        $this->authorize('update', $hackathon);
+
         $segment = $hackathon->segments()->create($request->safe()->except('rulebook'));
 
         if ($request->hasFile('rulebook')) {
@@ -35,6 +37,8 @@ class SegmentController extends Controller
      */
     public function update(UpdateSegmentRequest $request, Hackathon $hackathon, Segment $segment)
     {
+        $this->authorize('update', $hackathon);
+
         $segment->update($request->safe()->except('rulebook'));
 
         if ($request->hasFile('rulebook')) {

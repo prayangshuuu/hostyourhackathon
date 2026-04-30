@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Participant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Team;
-use App\Models\TeamMember;
+use App\Models\User;
 use App\Services\TeamService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -18,10 +18,20 @@ class TeamMemberController extends Controller
     /**
      * Remove a member from a team (leave or kick).
      */
-    public function destroy(Team $team, TeamMember $member): RedirectResponse
+    public function destroy(Team $team, User $user): RedirectResponse
     {
+        $acting = Auth::user();
+
+        if ($user->id === $acting->id) {
+            $this->authorize('view', $team);
+        } else {
+            $this->authorize('update', $team);
+        }
+
+        $member = $team->members()->where('user_id', $user->id)->firstOrFail();
+
         try {
-            $this->teamService->removeMember($team, Auth::user(), $member);
+            $this->teamService->removeMember($team, $acting, $member);
         } catch (\InvalidArgumentException $e) {
             return back()->with('error', $e->getMessage());
         }

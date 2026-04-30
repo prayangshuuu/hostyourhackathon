@@ -22,6 +22,8 @@ class JudgeAssignmentController extends Controller
      */
     public function index(Hackathon $hackathon): View
     {
+        $this->authorize('update', $hackathon);
+
         $hackathon->load(['judges.user', 'judges.segment', 'segments']);
 
         return view('organizer.judges', compact('hackathon'));
@@ -32,6 +34,8 @@ class JudgeAssignmentController extends Controller
      */
     public function store(Request $request, Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('update', $hackathon);
+
         $data = $request->validate([
             'email' => ['required', 'email', 'exists:users,email'],
             'segment_id' => ['nullable', 'integer', 'exists:segments,id'],
@@ -58,6 +62,8 @@ class JudgeAssignmentController extends Controller
      */
     public function destroy(Hackathon $hackathon, Judge $judge): RedirectResponse
     {
+        $this->authorize('update', $hackathon);
+
         $this->scoringService->removeJudge($judge);
 
         return back()->with('success', 'Judge removed.');

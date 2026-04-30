@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\RoleEnum;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -15,77 +16,125 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     public function run(): void
     {
-        // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // ───────────────────────────────────────────
-        // Define all permissions
-        // ───────────────────────────────────────────
+        $tables = config('permission.table_names');
+
+        DB::table($tables['role_has_permissions'])->delete();
+        DB::table($tables['model_has_permissions'])->delete();
+        Permission::query()->delete();
+
         $permissions = [
-            // Organizer permissions
-            'manage-hackathon',
-            'manage-teams',
-            'manage-submissions',
-            'manage-announcements',
-            'manage-judges',
-            'view-scores',
-
-            // Participant permissions
-            'register-team',
-            'submit-idea',
-            'view-hackathon',
-
-            // Judge permissions
-            'view-submissions',
-            'score-submissions',
-
-            // Mentor permissions
-            'view-teams',
-            // 'view-submissions' is shared with judge
+            'hackathons.viewAny',
+            'hackathons.view',
+            'hackathons.create',
+            'hackathons.update',
+            'hackathons.delete',
+            'hackathons.forceDelete',
+            'hackathons.restore',
+            'hackathons.changeStatus',
+            'hackathons.viewAll',
+            'teams.viewAny',
+            'teams.view',
+            'teams.create',
+            'teams.update',
+            'teams.delete',
+            'teams.ban',
+            'teams.unban',
+            'teams.viewAll',
+            'submissions.viewAny',
+            'submissions.view',
+            'submissions.create',
+            'submissions.update',
+            'submissions.reopen',
+            'submissions.disqualify',
+            'submissions.viewAll',
+            'users.viewAny',
+            'users.view',
+            'users.update',
+            'users.delete',
+            'users.changeRole',
+            'users.ban',
+            'users.unban',
+            'users.impersonate',
+            'announcements.viewAny',
+            'announcements.create',
+            'announcements.update',
+            'announcements.delete',
+            'announcements.publish',
+            'judges.assign',
+            'judges.remove',
+            'judges.banTeam',
+            'scores.create',
+            'scores.update',
+            'settings.view',
+            'settings.update',
+            'cache.clear',
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+        foreach ($permissions as $name) {
+            Permission::create(['name' => $name, 'guard_name' => 'web']);
         }
 
-        // ───────────────────────────────────────────
-        // Create roles and assign permissions
-        // ───────────────────────────────────────────
+        $superAdmin = Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'web']);
+        $superAdmin->syncPermissions(Permission::all());
 
-        // Super Admin — gets all permissions via Spatie's Gate::before wildcard
-        Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value]);
+        $announcementPermissions = [
+            'announcements.viewAny',
+            'announcements.create',
+            'announcements.update',
+            'announcements.delete',
+            'announcements.publish',
+        ];
 
-        // Organizer
-        Role::firstOrCreate(['name' => RoleEnum::Organizer->value])
+        Role::firstOrCreate(['name' => RoleEnum::Organizer->value, 'guard_name' => 'web'])
             ->syncPermissions([
-                'manage-hackathon',
-                'manage-teams',
-                'manage-submissions',
-                'manage-announcements',
-                'manage-judges',
-                'view-scores',
+                'hackathons.viewAny',
+                'hackathons.view',
+                'hackathons.create',
+                'hackathons.update',
+                'hackathons.delete',
+                'hackathons.changeStatus',
+                'teams.viewAny',
+                'teams.view',
+                'teams.update',
+                'teams.ban',
+                'teams.unban',
+                'submissions.viewAny',
+                'submissions.view',
+                'submissions.reopen',
+                'submissions.disqualify',
+                ...$announcementPermissions,
+                'judges.assign',
+                'judges.remove',
             ]);
 
-        // Participant
-        Role::firstOrCreate(['name' => RoleEnum::Participant->value])
+        Role::firstOrCreate(['name' => RoleEnum::Participant->value, 'guard_name' => 'web'])
             ->syncPermissions([
-                'register-team',
-                'submit-idea',
-                'view-hackathon',
+                'teams.create',
+                'teams.view',
+                'submissions.create',
+                'submissions.update',
+                'hackathons.view',
             ]);
 
-        // Judge
-        Role::firstOrCreate(['name' => RoleEnum::Judge->value])
+        Role::firstOrCreate(['name' => RoleEnum::Judge->value, 'guard_name' => 'web'])
             ->syncPermissions([
-                'view-submissions',
-                'score-submissions',
+                'submissions.viewAny',
+                'submissions.view',
+                'scores.create',
+                'scores.update',
+                'judges.banTeam',
             ]);
 
-        // Mentor
-        Role::firstOrCreate(['name' => RoleEnum::Mentor->value])
+        Role::firstOrCreate(['name' => RoleEnum::Mentor->value, 'guard_name' => 'web'])
             ->syncPermissions([
-                'view-teams',
-                'view-submissions',
+                'teams.view',
+                'teams.viewAny',
+                'submissions.view',
+                'submissions.viewAny',
             ]);
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

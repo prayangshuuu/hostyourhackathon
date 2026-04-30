@@ -20,6 +20,8 @@ class SubmissionFileController extends Controller
      */
     public function store(Request $request, Submission $submission): RedirectResponse
     {
+        $this->authorize('update', $submission);
+
         $request->validate([
             'file' => ['required', 'file'],
         ]);
@@ -38,6 +40,8 @@ class SubmissionFileController extends Controller
      */
     public function destroy(SubmissionFile $submissionFile): RedirectResponse
     {
+        $this->authorize('update', $submissionFile->submission);
+
         try {
             $this->submissionService->deleteFile($submissionFile);
         } catch (\InvalidArgumentException $e) {

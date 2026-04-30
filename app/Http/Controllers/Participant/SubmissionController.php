@@ -11,6 +11,7 @@ use App\Models\TeamMember;
 use App\Services\SubmissionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class SubmissionController extends Controller
@@ -25,6 +26,9 @@ class SubmissionController extends Controller
      */
     public function create(Hackathon $hackathon): View|RedirectResponse
     {
+        $this->authorize('create', \App\Models\Submission::class);
+        Gate::authorize('submissions.createOnHackathon', $hackathon);
+
         $user = Auth::user();
 
         // Find user's team for this hackathon
@@ -54,6 +58,9 @@ class SubmissionController extends Controller
      */
     public function store(SaveSubmissionRequest $request, Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('create', \App\Models\Submission::class);
+        Gate::authorize('submissions.createOnHackathon', $hackathon);
+
         $user = $request->user();
         $team = $this->getUserTeam($hackathon, $user);
 
@@ -83,16 +90,11 @@ class SubmissionController extends Controller
      */
     public function show(Submission $submission): View
     {
+        $this->authorize('view', $submission);
+
         $submission->load(['team.members.user', 'hackathon', 'files']);
 
-        $user = Auth::user();
-        $isOrganizer = $submission->hackathon->organizers()
-            ->where('user_id', $user->id)
-            ->exists()
-            || $submission->hackathon->created_by === $user->id
-            || $user->hasRole('super_admin');
-
-        return view('submissions.show', compact('submission', 'isOrganizer'));
+        return view('submissions.show', compact('submission'));
     }
 
     /**
@@ -100,6 +102,8 @@ class SubmissionController extends Controller
      */
     public function edit(Submission $submission): View|RedirectResponse
     {
+        $this->authorize('update', $submission);
+
         $submission->load(['team.members.user', 'hackathon', 'files']);
 
         $user = Auth::user();
@@ -115,6 +119,8 @@ class SubmissionController extends Controller
      */
     public function update(SaveSubmissionRequest $request, Submission $submission): RedirectResponse
     {
+        $this->authorize('update', $submission);
+
         try {
             $this->submissionService->updateDraft(
                 $submission,
@@ -133,6 +139,8 @@ class SubmissionController extends Controller
      */
     public function finalize(FinalizeSubmissionRequest $request, Submission $submission): RedirectResponse
     {
+        $this->authorize('update', $submission);
+
         try {
             $this->submissionService->finalize($submission, $request->user());
         } catch (\InvalidArgumentException $e) {
@@ -142,20 +150,6 @@ class SubmissionController extends Controller
         return redirect()
             ->route('submissions.show', $submission)
             ->with('success', 'Submission finalized successfully!');
-    }
-
-    /**
-     * Re-open a finalized submission (organizer action).
-     */
-    public function reopen(Submission $submission): RedirectResponse
-    {
-        try {
-            $this->submissionService->reOpen($submission);
-        } catch (\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return back()->with('success', 'Submission re-opened. The team can now edit it.');
     }
 
     /**

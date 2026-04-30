@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hackathon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,6 +39,7 @@ class HackathonController extends Controller
     public function forceDelete(string $id): RedirectResponse
     {
         $hackathon = Hackathon::withTrashed()->findOrFail($id);
+        Gate::authorize('forceDelete', $hackathon);
         $title = $hackathon->title;
         $hackathon->forceDelete();
 
@@ -49,6 +51,7 @@ class HackathonController extends Controller
     public function restore(string $id): RedirectResponse
     {
         $hackathon = Hackathon::withTrashed()->findOrFail($id);
+        Gate::authorize('restore', $hackathon);
         $hackathon->restore();
 
         return redirect()
@@ -58,6 +61,8 @@ class HackathonController extends Controller
 
     public function destroy(Hackathon $hackathon): RedirectResponse
     {
+        $this->authorize('delete', $hackathon);
+
         $title = $hackathon->title;
         $hackathon->delete();
 
