@@ -34,41 +34,45 @@
             </thead>
             <tbody>
                 @forelse($announcements as $announcement)
+                    @php
+                        $vis = $announcement->visibility instanceof \App\Enums\AnnouncementVisibility ? $announcement->visibility->value : $announcement->visibility;
+                        $st = $announcement->status instanceof \App\Enums\AnnouncementStatus ? $announcement->status->value : $announcement->status;
+                    @endphp
                     <tr>
                         <td style="font-weight: 500; color: var(--text-primary);">{{ $announcement->title }}</td>
                         <td>
                             @php
-                                $visVariant = match($announcement->visibility) {
+                                $visVariant = match($vis) {
                                     'all' => 'neutral',
                                     'registered' => 'indigo',
                                     'segment' => 'amber',
                                     default => 'neutral',
                                 };
-                                $visText = match($announcement->visibility) {
+                                $visText = match($vis) {
                                     'all' => 'All Participants',
                                     'registered' => 'Registered Teams',
                                     'segment' => 'Segment: ' . ($announcement->segment->name ?? 'Unknown'),
-                                    default => ucfirst($announcement->visibility),
+                                    default => ucfirst((string) $vis),
                                 };
                             @endphp
                             <x-badge :variant="$visVariant">{{ $visText }}</x-badge>
                         </td>
                         <td>
                             @php
-                                $statusVariant = match($announcement->status) {
+                                $statusVariant = match($st) {
                                     'draft' => 'neutral',
                                     'scheduled' => 'warning',
                                     'published' => 'success',
                                     default => 'neutral',
                                 };
                             @endphp
-                            <x-badge :variant="$statusVariant">{{ ucfirst($announcement->status) }}</x-badge>
+                            <x-badge :variant="$statusVariant">{{ ucfirst($st) }}</x-badge>
                         </td>
                         <td>
-                            @if($announcement->status === 'draft')
+                            @if($st === 'draft')
                                 <span class="text-muted">—</span>
-                            @elseif($announcement->status === 'scheduled')
-                                {{ $announcement->scheduled_at->format('M d, Y h:i A') }}
+                            @elseif($st === 'scheduled')
+                                {{ $announcement->scheduled_at?->format('M d, Y h:i A') ?? '—' }}
                             @else
                                 {{ $announcement->published_at ? $announcement->published_at->format('M d, Y h:i A') : '—' }}
                             @endif
@@ -79,7 +83,7 @@
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                                 </a>
 
-                                @if($announcement->status !== 'published')
+                                @if($st !== 'published')
                                     <form method="POST" action="{{ route('organizer.announcements.publish', [$hackathon, $announcement]) }}" style="margin: 0;">
                                         @csrf
                                         <button type="submit" class="btn btn-primary" style="padding: 4px 12px; font-size: 12px; height: 28px;">Publish</button>

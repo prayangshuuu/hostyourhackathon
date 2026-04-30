@@ -21,9 +21,6 @@ class TeamMember extends Model
         'joined_at',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -31,10 +28,6 @@ class TeamMember extends Model
             'joined_at' => 'datetime',
         ];
     }
-
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
 
     public function team(): BelongsTo
     {

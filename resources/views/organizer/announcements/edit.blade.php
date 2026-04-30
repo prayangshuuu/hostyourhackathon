@@ -43,17 +43,20 @@
 
                 <div style="margin-bottom: 20px;">
                     <label class="form-label" for="visibility">Visibility</label>
+                    @php
+                        $visVal = $announcement->visibility instanceof \App\Enums\AnnouncementVisibility ? $announcement->visibility->value : $announcement->visibility;
+                    @endphp
                     <select name="visibility" id="visibility" class="form-input @error('visibility') is-invalid @enderror">
-                        <option value="all" {{ old('visibility', $announcement->visibility) == 'all' ? 'selected' : '' }}>All Participants</option>
-                        <option value="registered" {{ old('visibility', $announcement->visibility) == 'registered' ? 'selected' : '' }}>Registered Teams</option>
-                        <option value="segment" {{ old('visibility', $announcement->visibility) == 'segment' ? 'selected' : '' }}>Specific Segment</option>
+                        <option value="all" {{ old('visibility', $visVal) == 'all' ? 'selected' : '' }}>All Participants</option>
+                        <option value="registered" {{ old('visibility', $visVal) == 'registered' ? 'selected' : '' }}>Registered Teams</option>
+                        <option value="segment" {{ old('visibility', $visVal) == 'segment' ? 'selected' : '' }}>Specific Segment</option>
                     </select>
                     @error('visibility')
                         <div class="form-error">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div id="segment-container" style="display: {{ old('visibility', $announcement->visibility) == 'segment' ? 'block' : 'none' }}; margin-bottom: 20px;">
+                <div id="segment-container" style="display: {{ old('visibility', $visVal) == 'segment' ? 'block' : 'none' }}; margin-bottom: 20px;">
                     <label class="form-label" for="segment_id">Segment</label>
                     <select name="segment_id" id="segment_id" class="form-input @error('segment_id') is-invalid @enderror">
                         <option value="">Select a segment...</option>
@@ -72,19 +75,20 @@
                 <x-card title="Publishing">
                     <div style="margin-bottom: 16px;">
                         @php
-                            $statusVariant = match($announcement->status) {
+                            $stVal = $announcement->status instanceof \App\Enums\AnnouncementStatus ? $announcement->status->value : $announcement->status;
+                            $statusVariant = match($stVal) {
                                 'draft' => 'neutral',
                                 'scheduled' => 'warning',
                                 'published' => 'success',
                                 default => 'neutral',
                             };
                         @endphp
-                        <x-badge :variant="$statusVariant">{{ ucfirst($announcement->status) }}</x-badge>
+                        <x-badge :variant="$statusVariant">{{ ucfirst($stVal) }}</x-badge>
                     </div>
                     
                     <hr class="form-divider" style="margin: 16px 0;">
 
-                    @if($announcement->status !== 'published')
+                    @if($stVal !== 'published')
                         <div style="margin-bottom: 24px;">
                             <label class="form-label" for="scheduled_at">Schedule for later (optional)</label>
                             <input type="datetime-local" name="scheduled_at" id="scheduled_at" class="form-input @error('scheduled_at') is-invalid @enderror" value="{{ old('scheduled_at', $announcement->scheduled_at?->format('Y-m-d\TH:i')) }}">

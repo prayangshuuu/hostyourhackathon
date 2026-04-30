@@ -18,22 +18,15 @@ class SubmissionFile extends Model
         'file_path',
         'file_type',
         'original_name',
-        'file_size',
+        'file_size_kb',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'file_size' => 'integer',
+            'file_size_kb' => 'integer',
         ];
     }
-
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
 
     public function submission(): BelongsTo
     {

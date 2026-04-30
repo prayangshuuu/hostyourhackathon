@@ -17,12 +17,12 @@ class SaveSubmissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'             => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'max:255'],
             'problem_statement' => ['required', 'string'],
-            'description'       => ['required', 'string'],
-            'tech_stack'        => ['required', 'string'],
-            'demo_url'          => ['nullable', 'url', 'max:500'],
-            'repo_url'          => ['nullable', 'url', 'max:500'],
+            'description' => ['required', 'string'],
+            'tech_stack' => ['nullable', 'string'],
+            'demo_url' => ['nullable', 'url', 'max:500'],
+            'repo_url' => ['nullable', 'url', 'max:500'],
         ];
     }
 
@@ -32,12 +32,11 @@ class SaveSubmissionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.required'             => 'Your submission needs a title.',
+            'title.required' => 'Your submission needs a title.',
             'problem_statement.required' => 'Describe the problem you are solving.',
-            'description.required'       => 'Provide a description of your project.',
-            'tech_stack.required'        => 'List the technologies you are using.',
-            'demo_url.url'               => 'Please enter a valid URL for the demo.',
-            'repo_url.url'               => 'Please enter a valid URL for the repository.',
+            'description.required' => 'Provide a description of your project.',
+            'demo_url.url' => 'Please enter a valid URL for the demo.',
+            'repo_url.url' => 'Please enter a valid URL for the repository.',
         ];
     }
 }

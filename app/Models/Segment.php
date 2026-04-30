@@ -18,11 +18,16 @@ class Segment extends Model
         'hackathon_id',
         'name',
         'description',
+        'rulebook_path',
+        'order',
     ];
 
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
+    protected function casts(): array
+    {
+        return [
+            'order' => 'integer',
+        ];
+    }
 
     public function hackathon(): BelongsTo
     {
@@ -42,5 +47,15 @@ class Segment extends Model
     public function announcements(): HasMany
     {
         return $this->hasMany(Announcement::class);
+    }
+
+    public function faqs(): HasMany
+    {
+        return $this->hasMany(Faq::class);
+    }
+
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(Submission::class);
     }
 }

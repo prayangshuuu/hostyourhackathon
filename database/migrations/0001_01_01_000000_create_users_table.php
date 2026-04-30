@@ -20,8 +20,14 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('google_id')->nullable()->unique();
             $table->rememberToken();
+            $table->boolean('is_banned')->default(false);
+            $table->timestamp('banned_at')->nullable();
+            $table->string('banned_reason', 500)->nullable();
+            $table->enum('ban_type', ['manual', 'team_ban'])->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('is_banned');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

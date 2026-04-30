@@ -20,21 +20,16 @@ class Sponsor extends Model
         'logo',
         'url',
         'tier',
+        'order',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'tier' => SponsorTier::class,
+            'order' => 'integer',
         ];
     }
-
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
 
     public function hackathon(): BelongsTo
     {

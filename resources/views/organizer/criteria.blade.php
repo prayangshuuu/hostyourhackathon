@@ -24,7 +24,7 @@
         </div>
 
         {{-- Existing criteria --}}
-        @foreach ($hackathon->scoringCriteria as $criterion)
+        @foreach ($hackathon->criteria as $criterion)
             <form method="POST"
                   action="{{ route('organizer.hackathons.criteria.update', [$hackathon, $criterion]) }}"
                   class="criteria-row">
@@ -62,7 +62,7 @@
             </form>
         @endforeach
 
-        @if ($hackathon->scoringCriteria->isEmpty())
+        @if ($hackathon->criteria->isEmpty())
             <p class="text-helper" style="padding:16px 0;">No criteria defined yet. Add one below.</p>
         @endif
 

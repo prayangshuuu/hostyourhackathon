@@ -82,7 +82,7 @@
                                 <path d="M4 1h5.586L13 4.414V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.2"/>
                             </svg>
                             <a href="{{ Storage::url($file->file_path) }}" target="_blank" class="file-row-name">{{ $file->original_name }}</a>
-                            <span class="file-row-size">{{ number_format($file->file_size / 1024, 0) }} KB</span>
+                            <span class="file-row-size">{{ number_format($file->file_size_kb, 0) }} KB</span>
                         </div>
                     @endforeach
                 @else

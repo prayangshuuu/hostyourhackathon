@@ -21,7 +21,7 @@ class ScoringCriteriaController extends Controller
      */
     public function index(Hackathon $hackathon): View
     {
-        $hackathon->load('scoringCriteria');
+        $hackathon->load('criteria');
 
         return view('organizer.criteria', compact('hackathon'));
     }

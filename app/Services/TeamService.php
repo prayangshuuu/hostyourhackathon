@@ -74,16 +74,16 @@ class TeamService
 
         $team = Team::create([
             'hackathon_id' => $hackathon->id,
-            'segment_id'   => $data['segment_id'] ?? null,
-            'name'         => $data['name'],
-            'invite_code'  => $this->generateUniqueInviteCode(),
-            'created_by'   => $user->id,
+            'segment_id' => $data['segment_id'] ?? null,
+            'name' => $data['name'],
+            'invite_code' => $this->generateUniqueInviteCode(),
+            'created_by' => $user->id,
         ]);
 
         // Add creator as leader
         $team->members()->create([
-            'user_id'   => $user->id,
-            'role'      => TeamRole::Leader,
+            'user_id' => $user->id,
+            'role' => TeamRole::Leader,
             'joined_at' => now(),
         ]);
 
@@ -102,8 +102,8 @@ class TeamService
         $this->assertTeamNotFull($team);
 
         return $team->members()->create([
-            'user_id'   => $user->id,
-            'role'      => TeamRole::Member,
+            'user_id' => $user->id,
+            'role' => TeamRole::Member,
             'joined_at' => now(),
         ]);
     }
@@ -178,7 +178,7 @@ class TeamService
     protected function generateUniqueInviteCode(): string
     {
         do {
-            $code = Str::random(10);
+            $code = Str::random(12);
         } while (Team::where('invite_code', $code)->exists());
 
         return $code;

@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\BanType;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -18,8 +22,6 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     /**
-     * The attributes that are mass assignable.
-     *
      * @var list<string>
      */
     protected $fillable = [
@@ -28,11 +30,14 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'avatar',
         'google_id',
+        'is_banned',
+        'banned_at',
+        'banned_reason',
+        'ban_type',
+        'email_verified_at',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
      * @var list<string>
      */
     protected $hidden = [
@@ -40,31 +45,30 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_banned' => 'boolean',
+            'banned_at' => 'datetime',
+            'ban_type' => BanType::class,
         ];
     }
 
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
-
-    public function createdHackathons(): HasMany
+    public function scopeBanned(Builder $query): Builder
     {
-        return $this->hasMany(Hackathon::class, 'created_by');
+        return $query->where('is_banned', true);
     }
 
-    public function teams(): HasMany
+    public function scopeActive(Builder $query): Builder
     {
-        return $this->hasMany(Team::class, 'created_by');
+        return $query->where('is_banned', false);
+    }
+
+    public function isBanned(): bool
+    {
+        return (bool) $this->is_banned;
     }
 
     public function teamMemberships(): HasMany
@@ -72,7 +76,42 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(TeamMember::class);
     }
 
-    public function judgings(): HasMany
+    public function teams(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Team::class,
+            TeamMember::class,
+            'user_id',
+            'id',
+            'id',
+            'team_id',
+        );
+    }
+
+    public function createdHackathons(): HasMany
+    {
+        return $this->hasMany(Hackathon::class, 'created_by');
+    }
+
+    public function organizedHackathons(): BelongsToMany
+    {
+        return $this->belongsToMany(Hackathon::class, 'hackathon_organizers')
+            ->withTimestamps();
+    }
+
+    public function submissions(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Submission::class,
+            TeamMember::class,
+            'user_id',
+            'team_id',
+            'id',
+            'team_id',
+        );
+    }
+
+    public function judgeAssignments(): HasMany
     {
         return $this->hasMany(Judge::class);
     }
@@ -82,9 +121,20 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Announcement::class, 'created_by');
     }
 
-    public function organizedHackathons(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function hasTeamInHackathon(Hackathon $hackathon): bool
     {
-        return $this->belongsToMany(Hackathon::class, 'hackathon_organizers')
-            ->withTimestamps();
+        return $this->teamMemberships()
+            ->whereHas('team', fn (Builder $q) => $q->where('hackathon_id', $hackathon->id))
+            ->exists();
+    }
+
+    public function teamInHackathon(Hackathon $hackathon): ?Team
+    {
+        $membership = $this->teamMemberships()
+            ->whereHas('team', fn (Builder $q) => $q->where('hackathon_id', $hackathon->id))
+            ->with('team')
+            ->first();
+
+        return $membership?->team;
     }
 }

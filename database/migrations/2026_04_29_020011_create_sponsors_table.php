@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\SponsorTier;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,8 +17,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('logo');
             $table->string('url')->nullable();
-            $table->string('tier')->default(SponsorTier::Bronze->value);
+            $table->enum('tier', ['title', 'gold', 'silver', 'bronze'])->default('bronze');
+            $table->unsignedSmallInteger('order')->default(0);
             $table->timestamps();
+
+            $table->index('hackathon_id');
+            $table->index('tier');
         });
     }
 

@@ -64,10 +64,11 @@ class ScoringService
      */
     public function addCriterion(Hackathon $hackathon, array $data): ScoringCriterion
     {
-        return $hackathon->scoringCriteria()->create([
+        return $hackathon->criteria()->create([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'max_score' => $data['max_score'],
+            'order' => $data['order'] ?? 0,
         ]);
     }
 
@@ -80,6 +81,7 @@ class ScoringService
             'name' => $data['name'],
             'description' => $data['description'] ?? $criterion->description,
             'max_score' => $data['max_score'],
+            'order' => $data['order'] ?? $criterion->order,
         ]);
 
         return $criterion;
@@ -134,7 +136,7 @@ class ScoringService
     /**
      * Save or update scores for a submission from a judge.
      *
-     * @param array $scores ['criteria_id' => ['score' => int, 'remarks' => string|null], ...]
+     * @param  array  $scores  ['criteria_id' => ['score' => int, 'remarks' => string|null], ...]
      */
     public function saveScores(Judge $judge, Submission $submission, array $scores): void
     {

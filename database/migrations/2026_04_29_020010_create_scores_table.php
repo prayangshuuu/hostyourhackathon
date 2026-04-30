@@ -21,6 +21,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['judge_id', 'submission_id', 'criteria_id']);
+            $table->index('submission_id');
+            $table->index('criteria_id');
         });
     }
 

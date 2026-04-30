@@ -43,7 +43,8 @@ class JudgeDashboardController extends Controller
 
             $items = $query->get()->map(function ($submission) use ($judge, $hackathon) {
                 $submission->judge_id = $judge->id;
-                $submission->criteria_count = $hackathon->scoringCriteria()->count();
+                $submission->criteria_count = $hackathon->criteria()->count();
+
                 return $submission;
             });
 

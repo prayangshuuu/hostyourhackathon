@@ -15,14 +15,12 @@ class Faq extends Model
      */
     protected $fillable = [
         'hackathon_id',
+        'segment_id',
         'question',
         'answer',
         'order',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -30,12 +28,13 @@ class Faq extends Model
         ];
     }
 
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
-
     public function hackathon(): BelongsTo
     {
         return $this->belongsTo(Hackathon::class);
+    }
+
+    public function segment(): BelongsTo
+    {
+        return $this->belongsTo(Segment::class);
     }
 }

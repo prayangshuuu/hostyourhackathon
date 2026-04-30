@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
             $table->string('name');
-            $table->text('description')->nullable();
-            $table->unsignedSmallInteger('max_score');
+            $table->string('description')->nullable();
+            $table->unsignedSmallInteger('max_score')->default(10);
+            $table->unsignedSmallInteger('order')->default(0);
             $table->timestamps();
+
+            $table->index('hackathon_id');
         });
     }
 

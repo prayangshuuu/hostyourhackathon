@@ -20,10 +20,6 @@ class Judge extends Model
         'segment_id',
     ];
 
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
-
     public function hackathon(): BelongsTo
     {
         return $this->belongsTo(Hackathon::class);

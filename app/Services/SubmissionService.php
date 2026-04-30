@@ -14,29 +14,19 @@ use InvalidArgumentException;
 
 class SubmissionService
 {
-    /**
-     * Ensure the submission window is currently open for a hackathon.
-     *
-     * @throws InvalidArgumentException
-     */
     public function assertWindowOpen(Hackathon $hackathon): void
     {
-        $now = now();
+        if (! $hackathon->isSubmissionOpen()) {
+            $now = now();
 
-        if ($hackathon->submission_opens_at && $now->lt($hackathon->submission_opens_at)) {
-            throw new InvalidArgumentException('The submission window has not opened yet.');
-        }
+            if ($hackathon->submission_opens_at && $now->lt($hackathon->submission_opens_at)) {
+                throw new InvalidArgumentException('The submission window has not opened yet.');
+            }
 
-        if ($hackathon->submission_closes_at && $now->gt($hackathon->submission_closes_at)) {
             throw new InvalidArgumentException('The submission window is closed.');
         }
     }
 
-    /**
-     * Ensure the team doesn't already have a submission for this hackathon.
-     *
-     * @throws InvalidArgumentException
-     */
     public function assertNoExistingSubmission(Team $team, Hackathon $hackathon): void
     {
         $exists = Submission::where('team_id', $team->id)
@@ -48,11 +38,6 @@ class SubmissionService
         }
     }
 
-    /**
-     * Ensure the user is the team leader.
-     *
-     * @throws InvalidArgumentException
-     */
     public function assertIsLeader(Team $team, User $user): void
     {
         $isLeader = $team->members()
@@ -65,23 +50,17 @@ class SubmissionService
         }
     }
 
-    /**
-     * Ensure the submission is still editable (draft + window open).
-     *
-     * @throws InvalidArgumentException
-     */
     public function assertEditable(Submission $submission): void
     {
-        if (! $submission->is_draft) {
-            throw new InvalidArgumentException('This submission has been finalized and cannot be edited.');
-        }
+        if (! $submission->isEditable()) {
+            if (! $submission->hackathon?->isSubmissionOpen()) {
+                throw new InvalidArgumentException('The submission window is closed.');
+            }
 
-        $this->assertWindowOpen($submission->hackathon);
+            throw new InvalidArgumentException('This submission cannot be edited.');
+        }
     }
 
-    /**
-     * Create a new draft submission.
-     */
     public function saveDraft(Team $team, Hackathon $hackathon, User $user, array $data): Submission
     {
         $this->assertWindowOpen($hackathon);
@@ -91,19 +70,17 @@ class SubmissionService
         return Submission::create([
             'team_id' => $team->id,
             'hackathon_id' => $hackathon->id,
+            'segment_id' => $team->segment_id,
             'title' => $data['title'],
             'problem_statement' => $data['problem_statement'],
             'description' => $data['description'],
-            'tech_stack' => $data['tech_stack'],
+            'tech_stack' => $data['tech_stack'] ?? null,
             'demo_url' => $data['demo_url'] ?? null,
             'repo_url' => $data['repo_url'] ?? null,
             'is_draft' => true,
         ]);
     }
 
-    /**
-     * Update an existing draft submission.
-     */
     public function updateDraft(Submission $submission, User $user, array $data): Submission
     {
         $this->assertEditable($submission);
@@ -113,7 +90,7 @@ class SubmissionService
             'title' => $data['title'],
             'problem_statement' => $data['problem_statement'],
             'description' => $data['description'],
-            'tech_stack' => $data['tech_stack'],
+            'tech_stack' => $data['tech_stack'] ?? null,
             'demo_url' => $data['demo_url'] ?? null,
             'repo_url' => $data['repo_url'] ?? null,
         ]);
@@ -121,9 +98,6 @@ class SubmissionService
         return $submission;
     }
 
-    /**
-     * Finalize a submission. Irreversible unless organizer re-opens.
-     */
     public function finalize(Submission $submission, User $user): void
     {
         $this->assertEditable($submission);
@@ -132,12 +106,10 @@ class SubmissionService
         $submission->update([
             'is_draft' => false,
             'submitted_at' => now(),
+            're_open_submission' => false,
         ]);
     }
 
-    /**
-     * Re-open a finalized submission (organizer action).
-     */
     public function reOpen(Submission $submission): void
     {
         if ($submission->is_draft) {
@@ -145,35 +117,28 @@ class SubmissionService
         }
 
         $submission->update([
-            'is_draft' => true,
-            'submitted_at' => null,
+            're_open_submission' => true,
         ]);
     }
 
-    /**
-     * Store a file attachment for a submission.
-     */
     public function storeFile(Submission $submission, UploadedFile $file): SubmissionFile
     {
         $this->assertEditable($submission);
 
-        // Validate extension
         $extension = strtolower($file->getClientOriginalExtension());
         $allowedExtensions = config('hackathon.submission.allowed_extensions', ['pdf', 'ppt', 'pptx']);
 
         if (! in_array($extension, $allowedExtensions)) {
-            throw new InvalidArgumentException('Only ' . implode(', ', $allowedExtensions) . ' files are allowed.');
+            throw new InvalidArgumentException('Only '.implode(', ', $allowedExtensions).' files are allowed.');
         }
 
-        // Validate size
         $maxSizeKb = config('hackathon.submission.max_file_size_kb', 10240);
-        $fileSizeKb = $file->getSize() / 1024;
+        $fileSizeKb = (int) ceil($file->getSize() / 1024);
 
         if ($fileSizeKb > $maxSizeKb) {
-            throw new InvalidArgumentException('File size exceeds the maximum of ' . ($maxSizeKb / 1024) . ' MB.');
+            throw new InvalidArgumentException('File size exceeds the maximum of '.($maxSizeKb / 1024).' MB.');
         }
 
-        // Validate count
         $maxFiles = config('hackathon.submission.max_files', 5);
         $currentCount = $submission->files()->count();
 
@@ -181,7 +146,6 @@ class SubmissionService
             throw new InvalidArgumentException("Maximum of {$maxFiles} files per submission.");
         }
 
-        // Store the file
         $directory = "public/submissions/{$submission->id}";
         $path = $file->store($directory);
 
@@ -189,13 +153,10 @@ class SubmissionService
             'file_path' => $path,
             'file_type' => $extension,
             'original_name' => $file->getClientOriginalName(),
-            'file_size' => $file->getSize(),
+            'file_size_kb' => max(0, $fileSizeKb),
         ]);
     }
 
-    /**
-     * Delete a file attachment.
-     */
     public function deleteFile(SubmissionFile $file): void
     {
         $submission = $file->submission;

@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\AnnouncementStatus;
 use App\Enums\AnnouncementVisibility;
 use App\Mail\AnnouncementPublishedMail;
 use App\Models\Announcement;
 use App\Models\Hackathon;
-use App\Models\TeamMember;
 use App\Models\User;
 use App\Notifications\AnnouncementPublished;
 use Illuminate\Support\Facades\Mail;
@@ -22,6 +22,11 @@ class AnnouncementService
      */
     public function create(Hackathon $hackathon, array $data, User $author): Announcement
     {
+        $scheduledAt = $data['scheduled_at'] ?? null;
+        $status = $scheduledAt
+            ? AnnouncementStatus::Scheduled
+            : AnnouncementStatus::Draft;
+
         $announcement = $hackathon->announcements()->create([
             'title' => $data['title'],
             'body' => $data['body'],
@@ -29,8 +34,9 @@ class AnnouncementService
             'segment_id' => ($data['visibility'] === AnnouncementVisibility::Segment->value)
                 ? $data['segment_id']
                 : null,
-            'scheduled_at' => $data['scheduled_at'] ?? null,
+            'scheduled_at' => $scheduledAt,
             'published_at' => null,
+            'status' => $status,
             'created_by' => $author->id,
         ]);
 
@@ -42,6 +48,12 @@ class AnnouncementService
      */
     public function update(Announcement $announcement, array $data): Announcement
     {
+        $scheduledAt = $data['scheduled_at'] ?? null;
+        $nextStatus = $announcement->status;
+        if ($announcement->status !== AnnouncementStatus::Published) {
+            $nextStatus = $scheduledAt ? AnnouncementStatus::Scheduled : AnnouncementStatus::Draft;
+        }
+
         $announcement->update([
             'title' => $data['title'],
             'body' => $data['body'],
@@ -49,7 +61,8 @@ class AnnouncementService
             'segment_id' => ($data['visibility'] === AnnouncementVisibility::Segment->value)
                 ? $data['segment_id']
                 : null,
-            'scheduled_at' => $data['scheduled_at'] ?? null,
+            'scheduled_at' => $scheduledAt,
+            'status' => $nextStatus,
         ]);
 
         return $announcement;
@@ -74,7 +87,10 @@ class AnnouncementService
     {
         $publishAt = $announcement->scheduled_at ?? now();
 
-        $announcement->update(['published_at' => $publishAt]);
+        $announcement->update([
+            'published_at' => $publishAt,
+            'status' => AnnouncementStatus::Published,
+        ]);
 
         // Send email and in-app notification to eligible users
         $this->notifyEligibleUsers($announcement);
@@ -92,6 +108,7 @@ class AnnouncementService
     public function getVisibleForParticipant(Hackathon $hackathon, User $user)
     {
         return Announcement::where('hackathon_id', $hackathon->id)
+            ->where('status', AnnouncementStatus::Published)
             ->whereNotNull('published_at')
             ->where(function ($query) {
                 $query->where('scheduled_at', '<=', now())
@@ -102,25 +119,25 @@ class AnnouncementService
                     ->orWhere(function ($q) use ($hackathon, $user) {
                         // Registered: user is a team member in this hackathon
                         $q->where('visibility', AnnouncementVisibility::Registered->value)
-                          ->whereExists(function ($sub) use ($hackathon, $user) {
-                              $sub->selectRaw('1')
-                                  ->from('team_members')
-                                  ->join('teams', 'teams.id', '=', 'team_members.team_id')
-                                  ->where('teams.hackathon_id', $hackathon->id)
-                                  ->where('team_members.user_id', $user->id);
-                          });
+                            ->whereExists(function ($sub) use ($hackathon, $user) {
+                                $sub->selectRaw('1')
+                                    ->from('team_members')
+                                    ->join('teams', 'teams.id', '=', 'team_members.team_id')
+                                    ->where('teams.hackathon_id', $hackathon->id)
+                                    ->where('team_members.user_id', $user->id);
+                            });
                     })
                     ->orWhere(function ($q) use ($hackathon, $user) {
                         // Segment: user is in a team assigned to the announcement's segment
                         $q->where('visibility', AnnouncementVisibility::Segment->value)
-                          ->whereExists(function ($sub) use ($hackathon, $user) {
-                              $sub->selectRaw('1')
-                                  ->from('team_members')
-                                  ->join('teams', 'teams.id', '=', 'team_members.team_id')
-                                  ->where('teams.hackathon_id', $hackathon->id)
-                                  ->where('team_members.user_id', $user->id)
-                                  ->whereColumn('teams.segment_id', 'announcements.segment_id');
-                          });
+                            ->whereExists(function ($sub) use ($hackathon, $user) {
+                                $sub->selectRaw('1')
+                                    ->from('team_members')
+                                    ->join('teams', 'teams.id', '=', 'team_members.team_id')
+                                    ->where('teams.hackathon_id', $hackathon->id)
+                                    ->where('team_members.user_id', $user->id)
+                                    ->whereColumn('teams.segment_id', 'announcements.segment_id');
+                            });
                     });
             })
             ->latest('published_at')
@@ -175,7 +192,7 @@ class AnnouncementService
                 $query->whereHas('teamMemberships', function ($q) use ($hackathon, $announcement) {
                     $q->whereHas('team', function ($t) use ($hackathon, $announcement) {
                         $t->where('hackathon_id', $hackathon->id)
-                          ->where('segment_id', $announcement->segment_id);
+                            ->where('segment_id', $announcement->segment_id);
                     });
                 });
                 break;

@@ -18,6 +18,7 @@ class Submission extends Model
     protected $fillable = [
         'team_id',
         'hackathon_id',
+        'segment_id',
         'title',
         'problem_statement',
         'description',
@@ -26,22 +27,23 @@ class Submission extends Model
         'repo_url',
         'is_draft',
         'submitted_at',
+        're_open_submission',
+        'disqualified',
+        'disqualified_reason',
+        'disqualified_by',
+        'disqualified_at',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'is_draft' => 'boolean',
+            're_open_submission' => 'boolean',
+            'disqualified' => 'boolean',
             'submitted_at' => 'datetime',
+            'disqualified_at' => 'datetime',
         ];
     }
-
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
 
     public function team(): BelongsTo
     {
@@ -51,6 +53,11 @@ class Submission extends Model
     public function hackathon(): BelongsTo
     {
         return $this->belongsTo(Hackathon::class);
+    }
+
+    public function segment(): BelongsTo
+    {
+        return $this->belongsTo(Segment::class);
     }
 
     public function files(): HasMany
@@ -63,42 +70,35 @@ class Submission extends Model
         return $this->hasMany(Score::class);
     }
 
-    // ───────────────────────────────────────────
-    // Helpers
-    // ───────────────────────────────────────────
+    public function disqualifier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'disqualified_by');
+    }
+
+    public function isEditable(): bool
+    {
+        if (! $this->hackathon?->isSubmissionOpen()) {
+            return false;
+        }
+
+        return $this->is_draft || $this->re_open_submission;
+    }
+
+    public function isFinal(): bool
+    {
+        return ! $this->is_draft && ! $this->re_open_submission;
+    }
+
+    public function totalScore(): int
+    {
+        return (int) $this->scores()->sum('score');
+    }
 
     /**
-     * Check if the submission window is currently open.
+     * @deprecated Use hackathon->isSubmissionOpen() via isEditable()
      */
     public function isWindowOpen(): bool
     {
-        $hackathon = $this->hackathon;
-        $now = now();
-
-        if ($hackathon->submission_opens_at && $now->lt($hackathon->submission_opens_at)) {
-            return false;
-        }
-
-        if ($hackathon->submission_closes_at && $now->gt($hackathon->submission_closes_at)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Check if the submission can be edited (draft + window open).
-     */
-    public function isEditable(): bool
-    {
-        return $this->is_draft && $this->isWindowOpen();
-    }
-
-    /**
-     * Check if the submission has been finalized.
-     */
-    public function isFinal(): bool
-    {
-        return ! $this->is_draft && $this->submitted_at !== null;
+        return (bool) $this->hackathon?->isSubmissionOpen();
     }
 }

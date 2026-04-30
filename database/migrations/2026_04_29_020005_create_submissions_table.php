@@ -15,16 +15,27 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
             $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
+            $table->foreignId('segment_id')->nullable()->constrained('segments')->nullOnDelete();
             $table->string('title');
             $table->text('problem_statement');
-            $table->text('description');
-            $table->text('tech_stack');
+            $table->longText('description');
+            $table->text('tech_stack')->nullable();
             $table->string('demo_url')->nullable();
             $table->string('repo_url')->nullable();
             $table->boolean('is_draft')->default(true);
             $table->timestamp('submitted_at')->nullable();
+            $table->boolean('re_open_submission')->default(false);
+            $table->boolean('disqualified')->default(false);
+            $table->string('disqualified_reason')->nullable();
+            $table->foreignId('disqualified_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('disqualified_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('hackathon_id');
+            $table->index('team_id');
+            $table->index('is_draft');
+            $table->index('disqualified');
         });
     }
 

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\HackathonStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiResponse;
 use App\Http\Resources\HackathonResource;
 use App\Http\Resources\LeaderboardEntryResource;
 use App\Models\Hackathon;
 use App\Services\LeaderboardService;
+use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -15,20 +17,20 @@ use OpenApi\Attributes as OA;
 class HackathonController extends Controller
 {
     #[OA\Get(
-        path: "/api/v1/hackathons",
-        operationId: "getHackathonsList",
-        summary: "Get list of hackathons",
-        tags: ["Hackathons"]
+        path: '/api/v1/hackathons',
+        operationId: 'getHackathonsList',
+        summary: 'Get list of hackathons',
+        tags: ['Hackathons']
     )]
-    #[OA\Parameter(name: "status", in: "query", required: false, schema: new OA\Schema(type: "string"))]
-    #[OA\Parameter(name: "search", in: "query", required: false, schema: new OA\Schema(type: "string"))]
-    #[OA\Response(response: 200, description: "Successful operation")]
+    #[OA\Parameter(name: 'status', in: 'query', required: false, schema: new OA\Schema(type: 'string'))]
+    #[OA\Parameter(name: 'search', in: 'query', required: false, schema: new OA\Schema(type: 'string'))]
+    #[OA\Response(response: 200, description: 'Successful operation')]
     public function index(Request $request): JsonResponse
     {
         $query = Hackathon::query();
 
         // If not an admin, only show published and ongoing hackathons
-        if (!$request->user() || !$request->user()->hasRole('super_admin')) {
+        if (! $request->user() || ! $request->user()->hasRole('super_admin')) {
             $statuses = ['published', 'ongoing'];
             if ($request->filled('status')) {
                 $requestedStatuses = explode(',', $request->status);
@@ -45,7 +47,7 @@ class HackathonController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('tagline', 'like', "%{$search}%");
+                    ->orWhere('tagline', 'like', "%{$search}%");
             });
         }
 
@@ -55,14 +57,14 @@ class HackathonController extends Controller
     }
 
     #[OA\Get(
-        path: "/api/v1/hackathons/{slug}",
-        operationId: "getHackathonBySlug",
-        summary: "Get a hackathon by slug",
-        tags: ["Hackathons"]
+        path: '/api/v1/hackathons/{slug}',
+        operationId: 'getHackathonBySlug',
+        summary: 'Get a hackathon by slug',
+        tags: ['Hackathons']
     )]
-    #[OA\Parameter(name: "slug", in: "path", required: true, schema: new OA\Schema(type: "string"))]
-    #[OA\Response(response: 200, description: "Successful operation")]
-    #[OA\Response(response: 404, description: "Not found")]
+    #[OA\Parameter(name: 'slug', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
+    #[OA\Response(response: 200, description: 'Successful operation')]
+    #[OA\Response(response: 404, description: 'Not found')]
     public function show($slug): JsonResponse
     {
         $hackathon = Hackathon::with('segments')->where('slug', $slug)->firstOrFail();
@@ -71,28 +73,28 @@ class HackathonController extends Controller
     }
 
     #[OA\Get(
-        path: "/api/v1/hackathons/{hackathon}/leaderboard",
-        operationId: "getHackathonLeaderboard",
-        summary: "Get hackathon leaderboard",
-        security: [["bearerAuth" => []]],
-        tags: ["Hackathons"]
+        path: '/api/v1/hackathons/{hackathon}/leaderboard',
+        operationId: 'getHackathonLeaderboard',
+        summary: 'Get hackathon leaderboard',
+        security: [['bearerAuth' => []]],
+        tags: ['Hackathons']
     )]
-    #[OA\Parameter(name: "hackathon", in: "path", required: true, schema: new OA\Schema(type: "string"))]
-    #[OA\Response(response: 200, description: "Successful operation")]
-    #[OA\Response(response: 403, description: "Forbidden")]
-    #[OA\Response(response: 404, description: "Not found")]
-    public function leaderboard(Hackathon $hackathon, Request $request, \App\Services\SettingService $settings, LeaderboardService $leaderboardService): JsonResponse
+    #[OA\Parameter(name: 'hackathon', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
+    #[OA\Response(response: 200, description: 'Successful operation')]
+    #[OA\Response(response: 403, description: 'Forbidden')]
+    #[OA\Response(response: 404, description: 'Not found')]
+    public function leaderboard(Hackathon $hackathon, Request $request, SettingService $settings, LeaderboardService $leaderboardService): JsonResponse
     {
-        if (!$settings->get('enable_leaderboard', true)) {
+        if (! $settings->get('enable_leaderboard', true)) {
             return ApiResponse::error('Leaderboard is currently disabled', [], 403);
         }
 
         $user = $request->user();
-        
+
         $isOrganizer = current($user->roles->pluck('name')->toArray()) === 'organizer' && $hackathon->created_by === $user->id;
         $isSuperAdmin = current($user->roles->pluck('name')->toArray()) === 'super_admin';
 
-        if (!$isOrganizer && !$isSuperAdmin && $hackathon->status !== 'ended') {
+        if (! $isOrganizer && ! $isSuperAdmin && $hackathon->status !== HackathonStatus::Ended) {
             return ApiResponse::error('Leaderboard is not available yet', [], 403);
         }
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Judge;
 
 use App\Http\Controllers\Controller;
-use App\Models\Hackathon;
 use App\Models\Judge;
 use App\Models\Submission;
 use App\Rules\MaxScoreRule;
@@ -19,15 +18,13 @@ class ScoreController extends Controller
         protected ScoringService $scoringService,
     ) {}
 
-
-
     /**
      * Show the scoring form for a specific submission.
      */
     public function create(Submission $submission): View
     {
         $user = Auth::user();
-        $submission->load(['team.segment', 'hackathon.scoringCriteria', 'files']);
+        $submission->load(['team.segment', 'hackathon.criteria', 'files']);
 
         // Find the judge assignment
         $judge = Judge::where('user_id', $user->id)
@@ -40,7 +37,7 @@ class ScoreController extends Controller
             ->get()
             ->keyBy('criteria_id');
 
-        $criteria = $submission->hackathon->scoringCriteria;
+        $criteria = $submission->hackathon->criteria;
         $canScore = ! ($submission->hackathon->results_at && now()->gte($submission->hackathon->results_at));
 
         return view('judging.score', compact('submission', 'judge', 'criteria', 'existingScores', 'canScore'));
@@ -58,7 +55,7 @@ class ScoreController extends Controller
             ->firstOrFail();
 
         // Build validation rules dynamically per criterion
-        $criteria = $submission->hackathon->scoringCriteria;
+        $criteria = $submission->hackathon->criteria;
         $rules = [];
 
         foreach ($criteria as $criterion) {
@@ -76,7 +73,7 @@ class ScoreController extends Controller
 
         return redirect()
             ->route('judge.dashboard')
-            ->with('success', 'Scores saved for "' . $submission->title . '".');
+            ->with('success', 'Scores saved for "'.$submission->title.'".');
     }
 
     /**

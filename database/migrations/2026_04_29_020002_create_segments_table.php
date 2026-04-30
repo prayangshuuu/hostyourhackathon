@@ -16,7 +16,11 @@ return new class extends Migration
             $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->string('rulebook_path')->nullable();
+            $table->unsignedSmallInteger('order')->default(0);
             $table->timestamps();
+
+            $table->index('hackathon_id');
         });
     }
 

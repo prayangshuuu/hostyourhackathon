@@ -102,7 +102,7 @@
                                 @endif
                             </svg>
                             <span class="file-row-name">{{ $file->original_name }}</span>
-                            <span class="file-row-size">{{ number_format($file->file_size / 1024, 0) }} KB</span>
+                            <span class="file-row-size">{{ number_format($file->file_size_kb, 0) }} KB</span>
                         </div>
                     @endforeach
                 @else

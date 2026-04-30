@@ -11,11 +11,6 @@ class ScoringCriterion extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'scoring_criteria';
 
     /**
@@ -26,21 +21,16 @@ class ScoringCriterion extends Model
         'name',
         'description',
         'max_score',
+        'order',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'max_score' => 'integer',
+            'order' => 'integer',
         ];
     }
-
-    // ───────────────────────────────────────────
-    // Relationships
-    // ───────────────────────────────────────────
 
     public function hackathon(): BelongsTo
     {
