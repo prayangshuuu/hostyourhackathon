@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Judge;
 use App\Models\Submission;
 use App\Rules\MaxScoreRule;
+use App\Services\SettingService;
 use App\Services\ScoringService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,10 @@ class ScoreController extends Controller
      */
     public function create(Submission $submission): View
     {
+        if (! app(SettingService::class)->get('enable_judging', true)) {
+            abort(403, 'Judging is currently disabled.');
+        }
+
         $this->authorize('view', $submission);
 
         $user = Auth::user();
@@ -50,6 +55,10 @@ class ScoreController extends Controller
      */
     public function store(Request $request, Submission $submission): RedirectResponse
     {
+        if (! app(SettingService::class)->get('enable_judging', true)) {
+            abort(403, 'Judging is currently disabled.');
+        }
+
         $this->authorize('view', $submission);
 
         $user = Auth::user();

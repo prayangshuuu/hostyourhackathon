@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', config('app.name', 'Laravel')) - Admin</title>
+    <title>{{ $appSettings->get('app_name', config('app.name', 'HostYourHackathon')) }} - @yield('title', 'Admin') - Admin</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,8 +29,12 @@
         <nav style="grid-column: 1 / -1; grid-row: 1; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: fixed; top: {{ session('impersonating_from') ? '40px' : '0' }}; left: 0; width: 100%; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
-                    <div style="width: 16px; height: 16px; background: var(--accent); border-radius: 2px;"></div>
-                    <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">{{ isset($settings) ? $settings->get('app_name', config('app.name')) : config('app.name') }}</span>
+                    @if($appSettings->get('app_logo'))
+                        <img src="{{ Storage::url($appSettings->get('app_logo')) }}" alt="{{ $appSettings->get('app_name', config('app.name')) }}" style="height: 28px; width: auto; object-fit: contain;">
+                    @else
+                        <div style="width: 16px; height: 16px; background: var(--accent); border-radius: 2px;"></div>
+                    @endif
+                    <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">{{ $appSettings->get('app_name', config('app.name')) }}</span>
                 </a>
                 <span style="font-size: 12px; background: var(--danger-light); color: var(--danger); border: 1px solid rgba(220,38,38,0.2); border-radius: 99px; padding: 2px 8px;">Admin Panel</span>
             </div>

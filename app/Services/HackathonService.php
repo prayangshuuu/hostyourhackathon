@@ -18,17 +18,17 @@ class HackathonService
             return true;
         }
 
-        // If multiple active hackathons are not allowed, check if they already have one.
-        $settings = app(\App\Services\SettingService::class);
-        $allowMultiple = $settings->get('allow_multiple_hackathons', true);
+        $settings = app(SettingService::class);
+        if (! $settings->get('allow_multiple_hackathons', true)) {
+            $activeCount = Hackathon::active()
+                ->where(function ($query) use ($user) {
+                    $query->where('created_by', $user->id)
+                        ->orWhereHas('organizers', fn ($q) => $q->where('user_id', $user->id));
+                })
+                ->count();
 
-        if (! $allowMultiple) {
-            $hasActive = Hackathon::where('created_by', $user->id)
-                ->whereIn('status', ['draft', 'published', 'ongoing'])
-                ->exists();
-
-            if ($hasActive) {
-                return false;
+            if ($activeCount >= 1) {
+                throw new \InvalidArgumentException('Multiple active hackathons are disabled by the administrator.');
             }
         }
 
@@ -40,9 +40,7 @@ class HackathonService
      */
     public function store(User $user, array $data): Hackathon
     {
-        if (! $this->canCreateHackathon($user)) {
-            throw new \InvalidArgumentException('You already have an active hackathon. Multiple active hackathons are currently disabled.');
-        }
+        $this->canCreateHackathon($user);
 
         $data['created_by'] = $user->id;
         $data['slug'] = Str::slug($data['title']) . '-' . strtolower(Str::random(6));

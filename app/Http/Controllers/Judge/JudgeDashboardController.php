@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Judge;
 use App\Http\Controllers\Controller;
 use App\Models\Judge;
 use App\Models\Submission;
+use App\Services\SettingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -15,6 +16,10 @@ class JudgeDashboardController extends Controller
      */
     public function index(): View
     {
+        if (! app(SettingService::class)->get('enable_judging', true)) {
+            abort(403, 'Judging is currently disabled.');
+        }
+
         $user = Auth::user();
 
         // Get all judge assignments for this user

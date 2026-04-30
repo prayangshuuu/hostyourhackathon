@@ -7,6 +7,7 @@ use App\Models\Hackathon;
 use App\Models\Judge;
 use App\Models\User;
 use App\Services\ScoringService;
+use App\Services\SettingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -23,6 +24,10 @@ class LeaderboardController extends Controller
      */
     public function show(Hackathon $hackathon): View
     {
+        if (! app(SettingService::class)->get('enable_leaderboard', true)) {
+            abort(403, 'Leaderboard is currently disabled.');
+        }
+
         $user = Auth::user();
 
         $canViewData = $this->leaderboardPayloadVisibleTo($user, $hackathon);

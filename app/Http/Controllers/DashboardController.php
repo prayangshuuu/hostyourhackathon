@@ -6,6 +6,7 @@ use App\Models\Announcement;
 use App\Models\Hackathon;
 use App\Models\Submission;
 use App\Models\Team;
+use App\Services\HackathonModeService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -17,8 +18,13 @@ class DashboardController extends Controller
     public function index(): View
     {
         $user = Auth::user();
+        $modeService = app(HackathonModeService::class);
+        $singleMode = $modeService->isSingleMode();
+        $singleActiveHackathon = $singleMode ? $modeService->getActiveHackathon() : null;
 
-        $hasActiveHackathons = Hackathon::active()->exists();
+        $hasActiveHackathons = $singleMode
+            ? $singleActiveHackathon !== null
+            : Hackathon::active()->exists();
 
         $myPastTeams = Team::whereHas('members', fn ($q) => $q->where('user_id', $user->id))
             ->with(['hackathon', 'segment', 'members'])
@@ -38,6 +44,10 @@ class DashboardController extends Controller
                 ->whereHas('hackathon', fn ($hq) => $hq->active())
                 ->with(['hackathon', 'segment'])
                 ->get();
+
+            if ($singleMode && $singleActiveHackathon) {
+                $myTeams = $myTeams->where('hackathon_id', $singleActiveHackathon->id)->values();
+            }
 
             $hackathons = $myTeams->pluck('hackathon')->unique('id');
 

@@ -15,22 +15,22 @@
             <x-card title="General">
                 <div style="margin-bottom: 20px;">
                     <label class="form-label" for="app_name">Site Name</label>
-                    <input type="text" name="app_name" id="app_name" class="form-input" value="{{ old('app_name', $settings->get('app_name', config('app.name'))) }}">
+                    <input type="text" name="app_name" id="app_name" class="form-input" value="{{ old('app_name', $appSettings->get('app_name', config('app.name'))) }}">
                 </div>
                 <div style="margin-bottom: 20px;">
                     <label class="form-label" for="app_url">Site URL</label>
-                    <input type="url" name="app_url" id="app_url" class="form-input" value="{{ old('app_url', $settings->get('app_url', config('app.url'))) }}">
+                    <input type="url" name="app_url" id="app_url" class="form-input" value="{{ old('app_url', $appSettings->get('app_url', config('app.url'))) }}">
                 </div>
                 <div style="margin-bottom: 20px;">
                     <label class="form-label" for="support_email">Support Email</label>
-                    <input type="email" name="support_email" id="support_email" class="form-input" value="{{ old('support_email', $settings->get('support_email')) }}">
+                    <input type="email" name="support_email" id="support_email" class="form-input" value="{{ old('support_email', $appSettings->get('support_email')) }}">
                 </div>
                 <div style="margin-bottom: 20px;">
                     <label class="form-label">Logo Upload</label>
                     <div style="display: flex; align-items: center; gap: 16px;">
-                        @if($settings->get('app_logo'))
+                        @if($appSettings->get('app_logo'))
                             <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--surface-alt); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                <img src="{{ Storage::url($settings->get('app_logo')) }}" alt="Logo" style="max-width: 100%; max-height: 100%;">
+                                <img src="{{ Storage::url($appSettings->get('app_logo')) }}" alt="Logo" style="max-width: 100%; max-height: 100%;">
                             </div>
                         @else
                             <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--surface-alt); border: 1px dashed var(--border-subtle); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px;">
@@ -47,17 +47,17 @@
                 <div class="form-grid-2">
                     <div style="margin-bottom: 20px;">
                         <label class="form-label" for="smtp_host">SMTP Host</label>
-                        <input type="text" name="smtp_host" id="smtp_host" class="form-input" value="{{ old('smtp_host', $settings->get('smtp_host')) }}">
+                        <input type="text" name="smtp_host" id="smtp_host" class="form-input" value="{{ old('smtp_host', $appSettings->get('smtp_host')) }}">
                     </div>
                     <div style="margin-bottom: 20px;">
                         <label class="form-label" for="smtp_port">SMTP Port</label>
-                        <input type="number" name="smtp_port" id="smtp_port" class="form-input" value="{{ old('smtp_port', $settings->get('smtp_port')) }}">
+                        <input type="number" name="smtp_port" id="smtp_port" class="form-input" value="{{ old('smtp_port', $appSettings->get('smtp_port')) }}">
                     </div>
                 </div>
                 <div class="form-grid-2">
                     <div style="margin-bottom: 20px;">
                         <label class="form-label" for="smtp_username">SMTP Username</label>
-                        <input type="text" name="smtp_username" id="smtp_username" class="form-input" value="{{ old('smtp_username', $settings->get('smtp_username')) }}">
+                        <input type="text" name="smtp_username" id="smtp_username" class="form-input" value="{{ old('smtp_username', $appSettings->get('smtp_username')) }}">
                     </div>
                     <div style="margin-bottom: 20px;">
                         <label class="form-label" for="smtp_password">SMTP Password</label>
@@ -70,24 +70,28 @@
                 <div style="margin-bottom: 20px;">
                     <label class="form-label" for="smtp_encryption">SMTP Encryption</label>
                     <select name="smtp_encryption" id="smtp_encryption" class="form-input">
-                        <option value="tls" {{ old('smtp_encryption', $settings->get('smtp_encryption')) === 'tls' ? 'selected' : '' }}>TLS</option>
-                        <option value="ssl" {{ old('smtp_encryption', $settings->get('smtp_encryption')) === 'ssl' ? 'selected' : '' }}>SSL</option>
-                        <option value="none" {{ old('smtp_encryption', $settings->get('smtp_encryption')) === 'none' ? 'selected' : '' }}>None</option>
+                        <option value="tls" {{ old('smtp_encryption', $appSettings->get('smtp_encryption')) === 'tls' ? 'selected' : '' }}>TLS</option>
+                        <option value="ssl" {{ old('smtp_encryption', $appSettings->get('smtp_encryption')) === 'ssl' ? 'selected' : '' }}>SSL</option>
+                        <option value="none" {{ old('smtp_encryption', $appSettings->get('smtp_encryption')) === 'none' ? 'selected' : '' }}>None</option>
                     </select>
                 </div>
                 <div class="form-grid-2">
                     <div style="margin-bottom: 20px;">
                         <label class="form-label" for="mail_from_name">Mail From Name</label>
-                        <input type="text" name="mail_from_name" id="mail_from_name" class="form-input" value="{{ old('mail_from_name', $settings->get('mail_from_name')) }}">
+                        <input type="text" name="mail_from_name" id="mail_from_name" class="form-input" value="{{ old('mail_from_name', $appSettings->get('mail_from_name')) }}">
                     </div>
                     <div style="margin-bottom: 20px;">
                         <label class="form-label" for="mail_from_address">Mail From Address</label>
-                        <input type="email" name="mail_from_address" id="mail_from_address" class="form-input" value="{{ old('mail_from_address', $settings->get('mail_from_address')) }}">
+                        <input type="email" name="mail_from_address" id="mail_from_address" class="form-input" value="{{ old('mail_from_address', $appSettings->get('mail_from_address')) }}">
                     </div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label class="form-label" for="max_file_upload_mb">Max File Upload (MB)</label>
+                    <input type="number" name="max_file_upload_mb" id="max_file_upload_mb" class="form-input" value="{{ old('max_file_upload_mb', $appSettings->get('max_file_upload_mb', 10)) }}">
                 </div>
 
                 <div style="margin-top: 12px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
-                    <button type="button" class="btn btn-secondary" onclick="fetch('{{ route('admin.settings.test-email') }}', {method: 'POST', headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}}).then(r=>r.json()).then(d=>alert(d.message)).catch(e=>alert('Error sending test email'))">
+                    <button type="submit" class="btn btn-secondary" formaction="{{ route('admin.settings.test-email') }}" formmethod="POST" formnovalidate>
                         Send Test Email
                     </button>
                 </div>
@@ -121,7 +125,7 @@
                             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">{{ $desc }}</div>
                         </div>
                         <input type="hidden" name="{{ $key }}" value="0">
-                        <input type="checkbox" name="{{ $key }}" value="1" class="toggle-checkbox" {{ $settings->get($key, true) ? 'checked' : '' }}>
+                        <input type="checkbox" name="{{ $key }}" value="1" class="toggle-checkbox" {{ $appSettings->get($key, true) ? 'checked' : '' }}>
                         <div class="toggle-track"><div class="toggle-thumb"></div></div>
                     </label>
                 @endforeach
@@ -134,7 +138,9 @@
                         <div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">Clear Cache</div>
                         <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Flushes all application cache, including settings.</div>
                     </div>
-                    <button type="button" class="btn btn-secondary" onclick="fetch('{{ route('admin.settings.clear-cache') }}', {method: 'POST', headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}}).then(()=>window.location.reload())">Clear Cache</button>
+                    <button type="submit" class="btn btn-secondary" formaction="{{ route('admin.settings.clear-cache') }}" formmethod="POST" formnovalidate>
+                        Clear Cache
+                    </button>
                 </div>
             </x-card>
         </div>

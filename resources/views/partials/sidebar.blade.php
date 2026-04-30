@@ -2,14 +2,22 @@
     
     @php
         $role = Auth::user()->roles->first()->name ?? 'participant';
+        $modeService = app(\App\Services\HackathonModeService::class);
+        $singleMode = $modeService->isSingleMode();
+        $activeHackathon = $singleMode ? $modeService->getActiveHackathon() : null;
         $navItems = [];
 
         if ($role === 'participant') {
             $navItems = [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'heroicon-o-home'],
-                ['label' => 'Browse Hackathons', 'route' => 'hackathons.index', 'icon' => 'heroicon-o-globe-alt'],
                 ['label' => 'My Teams', 'route' => 'teams.index', 'icon' => 'heroicon-o-user-group'],
             ];
+
+            if ($singleMode && $activeHackathon) {
+                $navItems[] = ['label' => 'Segments', 'route' => 'hackathons.show', 'params' => [$activeHackathon->slug], 'icon' => 'heroicon-o-squares-2x2'];
+            } else {
+                $navItems[] = ['label' => 'Browse Hackathons', 'route' => 'hackathons.index', 'icon' => 'heroicon-o-globe-alt'];
+            }
         } elseif ($role === 'organizer') {
             $navItems = [
                 ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'heroicon-o-home'],
@@ -41,7 +49,7 @@
                 $href = '#';
                 if (Route::has($item['route'])) {
                     try {
-                        $href = route($item['route'], request()->route()->parameters());
+                        $href = route($item['route'], $item['params'] ?? request()->route()->parameters());
                     } catch (\Illuminate\Routing\Exceptions\UrlGenerationException $e) {
                         $href = '#';
                     }

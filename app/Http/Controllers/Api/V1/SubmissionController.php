@@ -193,10 +193,9 @@ class SubmissionController extends Controller
     public function uploadFile(Request $request, Submission $submission, SubmissionService $submissionService, SettingService $settings): JsonResponse
     {
         $maxMb = $settings->get('max_file_upload_mb', 10);
-        $maxKb = $maxMb * 1024;
 
         $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf,ppt,pptx,zip', "max:{$maxKb}"],
+            'file' => ['required', 'file', 'mimes:pdf,ppt,pptx', "max:{$maxMb}000"],
         ]);
 
         try {

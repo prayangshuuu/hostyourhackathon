@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
@@ -16,6 +17,10 @@ class GoogleController extends Controller
      */
     public function redirect(): RedirectResponse
     {
+        if (! app(SettingService::class)->get('enable_google_oauth', true)) {
+            abort(404);
+        }
+
         return Socialite::driver('google')->redirect();
     }
 

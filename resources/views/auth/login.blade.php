@@ -1,10 +1,10 @@
 <x-guest-layout>
     <x-slot name="title">Sign In</x-slot>
-    <x-slot name="metaDescription">Sign in to your HostYourHackathon account.</x-slot>
+    <x-slot name="metaDescription">Sign in to your {{ $appSettings->get('app_name', config('app.name')) }} account.</x-slot>
 
     <div style="text-align: center; margin-bottom: 24px;">
         <a href="{{ route('home') }}" style="display: inline-block; font-size: 24px; font-weight: 700; color: var(--text-primary); text-decoration: none;">
-            HostYourHackathon
+            {{ $appSettings->get('app_name', config('app.name')) }}
         </a>
     </div>
 
@@ -46,7 +46,7 @@
         <x-button type="submit" variant="primary" style="width: 100%;">Sign in</x-button>
     </form>
 
-    @if($settings->get('enable_google_oauth', true))
+    @if($appSettings->get('enable_google_oauth', true))
     <div style="display: flex; align-items: center; margin: 24px 0;">
         <div style="flex: 1; height: 1px; background: var(--border);"></div>
         <div style="padding: 0 16px; color: var(--text-muted); font-size: 14px; font-weight: 500;">OR</div>

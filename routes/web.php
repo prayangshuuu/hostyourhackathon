@@ -149,7 +149,7 @@ Route::middleware(['auth', 'banned', 'verified', 'role:super_admin'])
         Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');
         Route::post('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
         Route::post('settings/clear-cache', [AdminSettingsController::class, 'clearCache'])->name('settings.clear-cache');
-        Route::post('settings/test-email', [AdminSettingsController::class, 'testEmail'])->name('settings.test-email');
+        Route::post('settings/test-email', [AdminSettingsController::class, 'sendTestEmail'])->name('settings.test-email');
     });
 
 // Impersonation exit must be accessible by any authenticated user who is currently impersonating

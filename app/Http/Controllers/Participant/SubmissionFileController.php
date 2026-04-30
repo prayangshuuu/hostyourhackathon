@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Participant;
 use App\Http\Controllers\Controller;
 use App\Models\Submission;
 use App\Models\SubmissionFile;
+use App\Services\SettingService;
 use App\Services\SubmissionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,8 +24,10 @@ class SubmissionFileController extends Controller
     {
         $this->authorize('update', $submission);
 
+        $maxMb = app(SettingService::class)->get('max_file_upload_mb', 10);
+
         $request->validate([
-            'file' => ['required', 'file'],
+            'file' => ['required', 'file', 'mimes:pdf,ppt,pptx', "max:{$maxMb}000"],
         ]);
 
         try {

@@ -1,6 +1,6 @@
 <x-guest-layout>
     <x-slot name="title">Verify Email</x-slot>
-    <x-slot name="metaDescription">Verify your email address for HostYourHackathon.</x-slot>
+    <x-slot name="metaDescription">Verify your email address for {{ $appSettings->get('app_name', config('app.name')) }}.</x-slot>
 
     <div style="text-align: center; margin-bottom: 24px;">
         <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: var(--surface-alt); margin-bottom: 16px;">

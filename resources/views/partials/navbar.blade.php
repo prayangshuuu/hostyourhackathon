@@ -1,12 +1,27 @@
 <nav style="height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: fixed; top: {{ session('impersonating_from') ? '40px' : '0' }}; left: 0; width: 100%; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
     {{-- Left: Logo --}}
     <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
-        <div style="width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700;">H</div>
-        <span style="font-size: 15px; line-height: 1.5; font-weight: 600; color: var(--text-primary);">HostYourHackathon</span>
+        @if($appSettings->get('app_logo'))
+            <img src="{{ Storage::url($appSettings->get('app_logo')) }}" alt="{{ $appSettings->get('app_name', config('app.name')) }}" style="height: 28px; width: auto; object-fit: contain;">
+        @else
+            <div style="width: 28px; height: 28px; background: var(--accent); border-radius: var(--radius-sm); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700;">H</div>
+        @endif
+        <span style="font-size: 15px; line-height: 1.5; font-weight: 600; color: var(--text-primary);">{{ $appSettings->get('app_name', config('app.name')) }}</span>
     </a>
 
     {{-- Right --}}
     <div style="display: flex; align-items: center; gap: 16px;">
+        @php
+            $singleMode = app(\App\Services\HackathonModeService::class)->isSingleMode();
+            $activeHackathon = $singleMode ? app(\App\Services\HackathonModeService::class)->getActiveHackathon() : null;
+        @endphp
+
+        @if(!auth()->check())
+            <a href="{{ $singleMode && $activeHackathon ? route('hackathons.show', $activeHackathon->slug) : route('hackathons.index') }}" style="font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: none;">
+                {{ $singleMode && $activeHackathon ? $activeHackathon->title : 'Hackathons' }}
+            </a>
+        @endif
+
         @auth
             {{-- Notification Bell --}}
             <div x-data="{ open: false, unread: {{ $unreadCount ?? 0 }} }" style="position: relative;">
@@ -76,7 +91,9 @@
             </div>
         @else
             <a href="{{ route('login') }}" style="font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: none;">Log in</a>
-            <x-button href="{{ route('register') }}" variant="primary" size="md">Sign up</x-button>
+            @if($appSettings->get('allow_registration', true))
+                <x-button href="{{ route('register') }}" variant="primary" size="md">Sign up</x-button>
+            @endif
         @endauth
     </div>
 </nav>

@@ -1,10 +1,10 @@
 <x-guest-layout>
     <x-slot name="title">Forgot Password</x-slot>
-    <x-slot name="metaDescription">Reset your HostYourHackathon password.</x-slot>
+    <x-slot name="metaDescription">Reset your {{ $appSettings->get('app_name', config('app.name')) }} password.</x-slot>
 
     <div style="text-align: center; margin-bottom: 24px;">
         <a href="{{ route('home') }}" style="display: inline-block; font-size: 24px; font-weight: 700; color: var(--text-primary); text-decoration: none;">
-            HostYourHackathon
+            {{ $appSettings->get('app_name', config('app.name')) }}
         </a>
     </div>
 

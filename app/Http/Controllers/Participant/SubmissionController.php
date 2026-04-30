@@ -9,6 +9,7 @@ use App\Http\Requests\Submission\SaveSubmissionRequest;
 use App\Models\Hackathon;
 use App\Models\Submission;
 use App\Models\TeamMember;
+use App\Services\SettingService;
 use App\Services\SubmissionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,10 @@ class SubmissionController extends Controller
      */
     public function create(Hackathon $hackathon): View|RedirectResponse
     {
+        if (! app(SettingService::class)->get('enable_submissions', true)) {
+            abort(403, 'Submissions are currently disabled.');
+        }
+
         $this->authorize('create', Submission::class);
         Gate::authorize('submissions.createOnHackathon', $hackathon);
 
@@ -59,6 +64,10 @@ class SubmissionController extends Controller
      */
     public function store(SaveSubmissionRequest $request, Hackathon $hackathon): RedirectResponse
     {
+        if (! app(SettingService::class)->get('enable_submissions', true)) {
+            abort(403, 'Submissions are currently disabled.');
+        }
+
         $this->authorize('create', Submission::class);
         Gate::authorize('submissions.createOnHackathon', $hackathon);
 
