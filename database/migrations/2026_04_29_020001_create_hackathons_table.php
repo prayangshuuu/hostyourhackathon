@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('banner')->nullable();
             $table->string('primary_color')->nullable()->default('#6366f1');
-            $table->enum('status', ['draft', 'published', 'ongoing', 'ended', 'archived'])->default('draft');
+            $table->string('status')->default('draft');
             $table->boolean('allow_solo')->default(true);
             $table->unsignedTinyInteger('min_team_size')->default(1);
             $table->unsignedTinyInteger('max_team_size')->default(5);
@@ -36,8 +36,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
+            // Indexes are automatically added by constrained() for created_by
             $table->index('status');
-            $table->index('created_by');
         });
     }
 

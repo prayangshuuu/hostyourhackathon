@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Organizer;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreHackathonRequest;
-use App\Http\Requests\UpdateHackathonRequest;
+use App\Http\Requests\Hackathon\StoreHackathonRequest;
+use App\Http\Requests\Hackathon\UpdateHackathonRequest;
 use App\Models\Hackathon;
 use App\Models\User;
 use App\Services\HackathonService;
@@ -26,13 +26,13 @@ class HackathonController extends Controller
         if ($user->hasRole('super_admin')) {
             $hackathons = Hackathon::withCount(['teams', 'submissions'])
                 ->latest()
-                ->get();
+                ->paginate(20);
         } else {
             $hackathons = Hackathon::where('created_by', $user->id)
-                ->orWhereHas('organizers', fn ($q) => $q->where('user_id', $user->id))
+                ->orWhereHas('organizers', fn ($q) => $q->where('users.id', $user->id))
                 ->withCount(['teams', 'submissions'])
                 ->latest()
-                ->get();
+                ->paginate(20);
         }
 
         $hasActiveHackathonsInSystem = Hackathon::active()->exists();

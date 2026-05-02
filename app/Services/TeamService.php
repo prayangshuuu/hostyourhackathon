@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Enums\TeamRole;
 use App\Models\Hackathon;
+use App\Models\Segment;
 use App\Models\Team;
 use App\Models\TeamMember;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -19,14 +21,28 @@ class TeamService
      */
     public function assertRegistrationOpen(Hackathon $hackathon): void
     {
-        $now = now();
+        if (!$hackathon->isRegistrationOpen()) {
+            throw new InvalidArgumentException('Registration is closed for this hackathon.');
+        }
+    }
 
-        if ($hackathon->registration_opens_at && $now->lt($hackathon->registration_opens_at)) {
-            throw new InvalidArgumentException('Registration has not opened yet.');
+    /**
+     * Ensure a segment is active and registration is open.
+     *
+     * @throws InvalidArgumentException
+     */
+    public function assertSegmentStatus(Segment $segment): void
+    {
+        if (!$segment->is_active) {
+            throw new InvalidArgumentException('This segment is currently inactive.');
         }
 
-        if ($hackathon->registration_closes_at && $now->gt($hackathon->registration_closes_at)) {
-            throw new InvalidArgumentException('Registration is closed.');
+        if (!$segment->isRegistrationOpen()) {
+            throw new InvalidArgumentException('Registration is closed for this segment.');
+        }
+
+        if ($segment->isFull()) {
+            throw new InvalidArgumentException('This segment is full.');
         }
     }
 
@@ -66,28 +82,39 @@ class TeamService
      */
     public function createTeam(Hackathon $hackathon, User $user, array $data): Team
     {
-        $this->assertRegistrationOpen($hackathon);
-        $this->assertNoExistingTeam($user, $hackathon);
+        return DB::transaction(function () use ($hackathon, $user, $data) {
+            $this->assertNoExistingTeam($user, $hackathon);
 
-        // Solo check — if not allowing solo and max_team_size > 1, that's fine.
-        // Solo check is at submission/completion time. Creation always allowed.
+            $segmentId = $data['segment_id'] ?? null;
 
-        $team = Team::create([
-            'hackathon_id' => $hackathon->id,
-            'segment_id' => $data['segment_id'] ?? null,
-            'name' => $data['name'],
-            'invite_code' => $this->generateUniqueInviteCode(),
-            'created_by' => $user->id,
-        ]);
+            if ($hackathon->hasSegments()) {
+                if (!$segmentId) {
+                    throw new InvalidArgumentException('You must select a segment.');
+                }
 
-        // Add creator as leader
-        $team->members()->create([
-            'user_id' => $user->id,
-            'role' => TeamRole::Leader,
-            'joined_at' => now(),
-        ]);
+                $segment = $hackathon->segments()->findOrFail($segmentId);
+                $this->assertSegmentStatus($segment);
+            } else {
+                $this->assertRegistrationOpen($hackathon);
+            }
 
-        return $team;
+            $team = Team::create([
+                'hackathon_id' => $hackathon->id,
+                'segment_id' => $segmentId,
+                'name' => $data['name'],
+                'invite_code' => $this->generateUniqueInviteCode(),
+                'created_by' => $user->id,
+            ]);
+
+            // Add creator as leader
+            $team->members()->create([
+                'user_id' => $user->id,
+                'role' => TeamRole::Leader,
+                'joined_at' => now(),
+            ]);
+
+            return $team;
+        });
     }
 
     /**
@@ -139,12 +166,14 @@ class TeamService
      */
     public function disbandTeam(Team $team, User $acting): void
     {
-        if (! $this->isLeader($team, $acting)) {
-            throw new InvalidArgumentException('Only the team leader can disband the team.');
-        }
+        DB::transaction(function () use ($team, $acting) {
+            if (! $this->isLeader($team, $acting)) {
+                throw new InvalidArgumentException('Only the team leader can disband the team.');
+            }
 
-        $team->members()->delete();
-        $team->delete();
+            $team->members()->delete();
+            $team->delete();
+        });
     }
 
     /**

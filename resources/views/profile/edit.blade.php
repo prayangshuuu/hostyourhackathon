@@ -1,29 +1,26 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
+@section('title', 'Profile')
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
+@slot('slot')
+    <x-page-header title="Profile Settings" description="Manage your account information and security." :breadcrumbs="['Dashboard' => route('dashboard'), 'Profile' => null]" />
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
+    <div class="space-y-6 max-w-3xl">
+        <x-card title="Update Profile" icon="user-circle">
+            @include('profile.partials.update-profile-information-form')
+        </x-card>
+
+        <x-card title="Change Password" icon="key">
+            @include('profile.partials.update-password-form')
+        </x-card>
+
+        <x-card title="Delete Account" icon="trash" class="border-red-100">
+            <div class="p-4 bg-red-50 border border-red-100 rounded-xl mb-6">
+                <p class="text-xs text-red-700 leading-relaxed font-medium">
+                    Once your account is deleted, all of its resources and data will be permanently deleted.
+                </p>
             </div>
-        </div>
+            @include('profile.partials.delete-user-form')
+        </x-card>
     </div>
-</x-app-layout>
+@endslot

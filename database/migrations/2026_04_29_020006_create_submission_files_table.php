@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('submission_files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('submission_id')->constrained('submissions')->cascadeOnDelete();
+            $table->foreignId('submission_id')->constrained()->cascadeOnDelete();
             $table->string('file_path');
             $table->string('file_type');
             $table->string('original_name');

@@ -6,8 +6,10 @@ use App\Models\Hackathon;
 use App\Models\Judge;
 use App\Models\Score;
 use App\Models\ScoringCriterion;
+use App\Models\Segment;
 use App\Models\Submission;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class ScoringService
@@ -36,9 +38,11 @@ class ScoringService
      *
      * @throws InvalidArgumentException
      */
-    public function assertScoringOpen(Hackathon $hackathon): void
+    public function assertScoringOpen(Hackathon $hackathon, ?Segment $segment = null): void
     {
-        if ($hackathon->results_at && now()->gte($hackathon->results_at)) {
+        $resultsAt = $segment?->results_at ?? $hackathon->results_at;
+
+        if ($resultsAt && now()->gte($resultsAt)) {
             throw new InvalidArgumentException('Scoring is closed — results have been published.');
         }
     }
@@ -62,9 +66,11 @@ class ScoringService
     /**
      * Add a scoring criterion to a hackathon.
      */
-    public function addCriterion(Hackathon $hackathon, array $data): ScoringCriterion
+    public function addCriterion(Hackathon $hackathon, array $data, ?int $segmentId = null): ScoringCriterion
     {
-        return $hackathon->criteria()->create([
+        return ScoringCriterion::create([
+            'hackathon_id' => $hackathon->id,
+            'segment_id' => $segmentId,
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'max_score' => $data['max_score'],
@@ -140,25 +146,27 @@ class ScoringService
      */
     public function saveScores(Judge $judge, Submission $submission, array $scores): void
     {
-        $hackathon = $submission->hackathon;
+        DB::transaction(function () use ($judge, $submission, $scores) {
+            $hackathon = $submission->hackathon;
 
-        $this->assertScoringOpen($hackathon);
-        $this->assertSubmissionFinalized($submission);
-        $this->assertJudgeCanScore($judge, $submission);
+            $this->assertScoringOpen($hackathon, $submission->segment);
+            $this->assertSubmissionFinalized($submission);
+            $this->assertJudgeCanScore($judge, $submission);
 
-        foreach ($scores as $criteriaId => $data) {
-            Score::updateOrCreate(
-                [
-                    'judge_id' => $judge->id,
-                    'submission_id' => $submission->id,
-                    'criteria_id' => $criteriaId,
-                ],
-                [
-                    'score' => $data['score'],
-                    'remarks' => $data['remarks'] ?? null,
-                ],
-            );
-        }
+            foreach ($scores as $criteriaId => $data) {
+                Score::updateOrCreate(
+                    [
+                        'judge_id' => $judge->id,
+                        'submission_id' => $submission->id,
+                        'criteria_id' => $criteriaId,
+                    ],
+                    [
+                        'score' => $data['score'],
+                        'remarks' => $data['remarks'] ?? null,
+                    ],
+                );
+            }
+        });
     }
 
     // ───────────────────────────────────────────
@@ -166,13 +174,33 @@ class ScoringService
     // ───────────────────────────────────────────
 
     /**
-     * Get the leaderboard for a hackathon using Eloquent withSum.
+     * Get the leaderboard for a specific segment.
      */
-    public function getLeaderboard(Hackathon $hackathon)
+    public function getLeaderboard(Hackathon $hackathon, Segment $segment): \Illuminate\Support\Collection
+    {
+        return Submission::where('hackathon_id', $hackathon->id)
+            ->where('segment_id', $segment->id)
+            ->where('is_draft', false)
+            ->where('disqualified', false)
+            ->with(['team.members.user'])
+            ->withSum('scores', 'score')
+            ->orderByDesc('scores_sum_score')
+            ->get()
+            ->map(function ($submission, $index) {
+                $submission->rank = $index + 1;
+                return $submission;
+            });
+    }
+
+    /**
+     * Get the overall leaderboard for all active segments in a hackathon.
+     */
+    public function getHackathonLeaderboard(Hackathon $hackathon): \Illuminate\Support\Collection
     {
         return Submission::where('hackathon_id', $hackathon->id)
             ->where('is_draft', false)
-            ->with(['team.segment'])
+            ->where('disqualified', false)
+            ->with(['team.members.user', 'segment'])
             ->withSum('scores', 'score')
             ->orderByDesc('scores_sum_score')
             ->get();

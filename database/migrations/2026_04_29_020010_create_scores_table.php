@@ -13,16 +13,12 @@ return new class extends Migration
     {
         Schema::create('scores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('judge_id')->constrained('judges')->cascadeOnDelete();
-            $table->foreignId('submission_id')->constrained('submissions')->cascadeOnDelete();
+            $table->foreignId('submission_id')->constrained()->cascadeOnDelete();
             $table->foreignId('criteria_id')->constrained('scoring_criteria')->cascadeOnDelete();
-            $table->unsignedSmallInteger('score');
+            $table->foreignId('judge_id')->constrained('users')->cascadeOnDelete();
+            $table->unsignedInteger('score');
             $table->text('remarks')->nullable();
             $table->timestamps();
-
-            $table->unique(['judge_id', 'submission_id', 'criteria_id']);
-            $table->index('submission_id');
-            $table->index('criteria_id');
         });
     }
 

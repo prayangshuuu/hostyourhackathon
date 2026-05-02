@@ -14,7 +14,9 @@ class SegmentResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'rulebook_url' => $this->rulebook_url,
+            'rulebook_url' => $this->rulebook_path ? Storage::url($this->rulebook_path) : null,
+            'cover_image_url' => $this->cover_image ? Storage::url($this->cover_image) : null,
+            'order' => $this->order,
         ];
     }
 }

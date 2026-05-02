@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('sponsors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
+            $table->foreignId('hackathon_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('segment_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
-            $table->string('logo');
+            $table->string('logo')->nullable();
             $table->string('url')->nullable();
-            $table->enum('tier', ['title', 'gold', 'silver', 'bronze'])->default('bronze');
+            $table->string('tier')->default('bronze');
             $table->unsignedSmallInteger('order')->default(0);
             $table->timestamps();
 
-            $table->index('hackathon_id');
             $table->index('tier');
         });
     }

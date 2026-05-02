@@ -17,6 +17,9 @@ class StoreHackathonRequest extends FormRequest
      */
     public function rules(): array
     {
+        $maxSizeMb = app(\App\Services\SettingService::class)->get('max_file_upload_mb', 10);
+        $maxSizeKb = $maxSizeMb * 1024;
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'tagline' => ['nullable', 'string', 'max:500'],
@@ -24,8 +27,8 @@ class StoreHackathonRequest extends FormRequest
             'rules' => ['nullable', 'string'],
             'prizes' => ['nullable', 'string'],
             'leaderboard_public' => ['sometimes', 'boolean'],
-            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:2048'],
-            'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:4096'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', "max:{$maxSizeKb}"],
+            'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', "max:{$maxSizeKb}"],
             'primary_color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'min_team_size' => ['required', 'integer', 'min:1'],
             'max_team_size' => ['required', 'integer', 'gte:min_team_size'],

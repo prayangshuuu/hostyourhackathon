@@ -77,7 +77,11 @@ class Submission extends Model
 
     public function isEditable(): bool
     {
-        if (! $this->hackathon?->isSubmissionOpen()) {
+        $isOpen = $this->segment
+            ? $this->segment->isSubmissionOpen()
+            : $this->hackathon?->isSubmissionOpen();
+
+        if (!$isOpen) {
             return false;
         }
 
@@ -95,10 +99,12 @@ class Submission extends Model
     }
 
     /**
-     * @deprecated Use hackathon->isSubmissionOpen() via isEditable()
+     * @deprecated Use segment or hackathon isSubmissionOpen() via isEditable()
      */
     public function isWindowOpen(): bool
     {
-        return (bool) $this->hackathon?->isSubmissionOpen();
+        return $this->segment
+            ? $this->segment->isSubmissionOpen()
+            : (bool) $this->hackathon?->isSubmissionOpen();
     }
 }

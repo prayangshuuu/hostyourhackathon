@@ -3,52 +3,54 @@
 @section('title', 'Submissions')
 
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h1 class="text-page-title">Submissions</h1>
-    </div>
+    <x-page-header title="Submissions" description="Review projects and track submission statuses." :breadcrumbs="['Dashboard' => route('dashboard'), 'Submissions' => null]" />
 
-    @if (session('success'))
-        <div style="margin-bottom: 24px;"><x-alert type="success" :message="session('success')" /></div>
-    @endif
-    @if (session('error'))
-        <div style="margin-bottom: 24px;"><x-alert type="error" :message="session('error')" /></div>
-    @endif
+    <x-card class="mb-6">
+        <form method="GET" action="{{ route('organizer.submissions.index') }}">
+            <x-input label="Filter by Hackathon" name="hackathon" type="select" onchange="this.form.submit()">
+                <option value="">All Hackathons</option>
+                @foreach ($hackathons as $h)
+                    <option value="{{ $h->id }}" @selected(request('hackathon') == $h->id)>{{ $h->title }}</option>
+                @endforeach
+            </x-input>
+        </form>
+    </x-card>
 
-    <form method="GET" action="{{ route('organizer.submissions.index') }}" class="card" style="padding: 16px; margin-bottom: 16px;">
-        <label for="hackathon" class="form-label">Hackathon</label>
-        <select name="hackathon" id="hackathon" class="form-input" onchange="this.form.submit()">
-            <option value="">All</option>
-            @foreach ($hackathons as $h)
-                <option value="{{ $h->id }}" @selected(request('hackathon') == $h->id)>{{ $h->title }}</option>
-            @endforeach
-        </select>
-    </form>
-
-    <div class="card" style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="border-bottom: 1px solid var(--border);">
-                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Title</th>
-                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Team</th>
-                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Hackathon</th>
-                    <th style="text-align: right; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($submissions as $submission)
-                    <tr style="border-bottom: 1px solid var(--border);">
-                        <td style="padding: 12px;">{{ Str::limit($submission->title, 40) }}</td>
-                        <td style="padding: 12px; color: var(--text-secondary);">{{ $submission->team->name }}</td>
-                        <td style="padding: 12px; color: var(--text-secondary);">{{ $submission->hackathon->title }}</td>
-                        <td style="padding: 12px; text-align: right;">
-                            <a href="{{ route('organizer.submissions.show', $submission) }}" style="color: var(--accent); font-weight: 500; text-decoration: none;">View</a>
-                        </td>
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Project Title</th>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Team</th>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Hackathon</th>
+                        <th class="px-5 h-[38px]"></th>
                     </tr>
-                @empty
-                    <tr><td colspan="4" style="padding: 32px; text-align: center; color: var(--text-secondary);">No submissions found.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-        <div style="padding: 16px;">{{ $submissions->links() }}</div>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($submissions as $submission)
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="px-5 h-[48px] text-sm font-semibold text-slate-900">{{ Str::limit($submission->title, 50) }}</td>
+                            <td class="px-5 h-[48px] text-sm text-slate-600">{{ $submission->team->name }}</td>
+                            <td class="px-5 h-[48px] text-sm text-slate-600">{{ $submission->hackathon->title }}</td>
+                            <td class="px-5 h-[48px] text-right">
+                                <x-button :href="route('organizer.submissions.show', $submission)" variant="ghost" size="sm">View Details</x-button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4">
+                                <x-empty-state icon="document-text" title="No submissions yet" description="Projects will appear here once teams start submitting." />
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($submissions->hasPages())
+            <div class="px-5 py-4 border-t border-slate-100 bg-slate-50">
+                {{ $submissions->links() }}
+            </div>
+        @endif
     </div>
 @endsection

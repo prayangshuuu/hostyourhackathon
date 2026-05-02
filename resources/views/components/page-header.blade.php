@@ -1,31 +1,24 @@
 @props(['title', 'description' => null, 'breadcrumbs' => []])
-
-<div style="border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px;">
-    @if(!empty($breadcrumbs))
-        <div style="font-size: 13px; line-height: 1.5; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-            @foreach($breadcrumbs as $index => $breadcrumb)
-                @if(isset($breadcrumb['url']) && !$loop->last)
-                    <a href="{{ $breadcrumb['url'] }}" style="color: var(--text-muted); text-decoration: none;">{{ $breadcrumb['label'] }}</a>
-                    <x-heroicon-o-chevron-right class="w-3 h-3" />
-                @else
-                    <span style="color: var(--text-secondary);">{{ $breadcrumb['label'] ?? $breadcrumb }}</span>
-                @endif
-            @endforeach
-        </div>
-    @endif
-
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
-        <div>
-            <h1 style="font-size: 22px; line-height: 1.3; font-weight: 600; color: var(--text-primary); margin: 4px 0 0 0;">{{ $title }}</h1>
-            @if($description)
-                <p style="font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 4px 0 0 0;">{{ $description }}</p>
-            @endif
-        </div>
-        
-        @if(isset($actions) && $actions->isNotEmpty())
-            <div style="display: flex; gap: 8px; align-items: center;">
-                {{ $actions }}
-            </div>
+<div class="mb-7 pb-5 border-b border-slate-200">
+  @if(count($breadcrumbs))
+    <nav class="flex items-center gap-1.5 mb-2">
+      @foreach($breadcrumbs as $label => $url)
+        @if($url)
+          <a href="{{ $url }}" class="text-2xs text-slate-400 hover:text-slate-600 transition-colors">{{ $label }}</a>
+          <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+        @else
+          <span class="text-2xs text-slate-500 font-medium">{{ $label }}</span>
         @endif
+      @endforeach
+    </nav>
+  @endif
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-bold text-slate-900 leading-tight">{{ $title }}</h1>
+      @if($description)<p class="text-xs text-slate-500 mt-1.5">{{ $description }}</p>@endif
     </div>
+    @isset($actions)
+      <div class="flex items-center gap-2 flex-shrink-0">{{ $actions }}</div>
+    @endisset
+  </div>
 </div>

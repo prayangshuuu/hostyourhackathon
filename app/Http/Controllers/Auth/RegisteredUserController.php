@@ -22,6 +22,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+        abort_unless(app(\App\Services\SettingService::class)->get('allow_registration', true), 403, 'Registration is currently disabled.');
+
         return view('auth.register');
     }
 
@@ -32,6 +34,8 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        abort_unless(app(\App\Services\SettingService::class)->get('allow_registration', true), 403, 'Registration is currently disabled.');
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)],

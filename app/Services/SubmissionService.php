@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\TeamRole;
 use App\Models\Hackathon;
+use App\Models\Segment;
 use App\Models\Submission;
 use App\Models\SubmissionFile;
 use App\Models\Team;
@@ -14,27 +15,50 @@ use InvalidArgumentException;
 
 class SubmissionService
 {
-    public function assertWindowOpen(Hackathon $hackathon): void
+    public function __construct(protected SettingService $settings) {}
+
+    public function assertWindowOpen(Hackathon $hackathon, ?Segment $segment = null): void
     {
-        if (! $hackathon->isSubmissionOpen()) {
-            $now = now();
+        $isOpen = $segment ? $segment->isSubmissionOpen() : $hackathon->isSubmissionOpen();
 
-            if ($hackathon->submission_opens_at && $now->lt($hackathon->submission_opens_at)) {
-                throw new InvalidArgumentException('The submission window has not opened yet.');
-            }
-
+        if (!$isOpen) {
             throw new InvalidArgumentException('The submission window is closed.');
+        }
+    }
+
+    public function assertSegmentSubmissionOpen(Segment $segment): void
+    {
+        if (!$segment->isSubmissionOpen()) {
+            throw new InvalidArgumentException('The submission window for this segment is closed.');
         }
     }
 
     public function assertNoExistingSubmission(Team $team, Hackathon $hackathon): void
     {
-        $exists = Submission::where('team_id', $team->id)
-            ->where('hackathon_id', $hackathon->id)
-            ->exists();
+        $segment = $team->segment;
+        $limit = $segment?->submission_limit ?? 1; // Default to 1 if no segment or no limit? Wait, request says null = unlimited.
+        
+        // Actually, if it's null, it's unlimited. But usually it's 1.
+        // The request says: "submission_limit (unsignedSmallInteger nullable) — max submissions per team in this segment (null = unlimited)"
+        
+        if ($segment && $segment->submission_limit !== null) {
+            $count = Submission::where('team_id', $team->id)
+                ->where('segment_id', $segment->id)
+                ->count();
+            
+            if ($count >= $segment->submission_limit) {
+                throw new InvalidArgumentException("Submission limit reached for this segment ({$segment->submission_limit}).");
+            }
+        } else {
+            // Default behavior for no segment or unlimited segment: 1 per team per hackathon?
+            // Let's stick to 1 if no segments, or use the limit if segment exists.
+            $exists = Submission::where('team_id', $team->id)
+                ->where('hackathon_id', $hackathon->id)
+                ->exists();
 
-        if ($exists) {
-            throw new InvalidArgumentException('Your team already has a submission for this hackathon.');
+            if ($exists && (!$segment || $segment->submission_limit !== null)) {
+                throw new InvalidArgumentException('Your team already has a submission for this hackathon.');
+            }
         }
     }
 
@@ -63,7 +87,7 @@ class SubmissionService
 
     public function saveDraft(Team $team, Hackathon $hackathon, User $user, array $data): Submission
     {
-        $this->assertWindowOpen($hackathon);
+        $this->assertWindowOpen($hackathon, $team->segment);
         $this->assertIsLeader($team, $user);
         $this->assertNoExistingSubmission($team, $hackathon);
 
@@ -138,11 +162,12 @@ class SubmissionService
         $extension = strtolower($file->getClientOriginalExtension());
         $allowedExtensions = config('hackathon.submission.allowed_extensions', ['pdf', 'ppt', 'pptx']);
 
-        if (! in_array($extension, $allowedExtensions)) {
+        if (! in_array($extension, $allowedExtensions, true)) {
             throw new InvalidArgumentException('Only '.implode(', ', $allowedExtensions).' files are allowed.');
         }
 
-        $maxSizeKb = config('hackathon.submission.max_file_size_kb', 10240);
+        $maxSizeMb = $this->settings->get('max_file_upload_mb', 10);
+        $maxSizeKb = $maxSizeMb * 1024;
         $fileSizeKb = (int) ceil($file->getSize() / 1024);
 
         if ($fileSizeKb > $maxSizeKb) {

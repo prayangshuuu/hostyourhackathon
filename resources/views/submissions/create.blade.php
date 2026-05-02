@@ -125,20 +125,31 @@
         {{-- Right Column: Sidebar --}}
         <div>
             <div class="card" style="position:sticky; top:32px;">
+                @if ($team->segment)
+                    <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--color-border-subtle);">
+                        <p class="text-muted" style="font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Track / Segment</p>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="badge badge-primary">{{ $team->segment->name }}</span>
+                        </div>
+                    </div>
+                @endif
+
                 <p class="text-card-title" style="margin-bottom:16px;">Submission Deadline</p>
 
-                @if ($hackathon->submission_closes_at)
-                    <x-countdown :deadline="$hackathon->submission_closes_at" />
+                @php
+                    $segment = $team->segment;
+                    $deadline = $segment ? $segment->effectiveSubmissionClosesAt() : $hackathon->submission_closes_at;
+                @endphp
+
+                @if ($deadline)
+                    <x-countdown :deadline="$deadline" />
                 @else
                     <p class="text-helper" style="text-align:center;">No deadline set</p>
                 @endif
 
                 {{-- Window indicator --}}
                 @php
-                    $windowOpen = true;
-                    $now = now();
-                    if ($hackathon->submission_opens_at && $now->lt($hackathon->submission_opens_at)) $windowOpen = false;
-                    if ($hackathon->submission_closes_at && $now->gt($hackathon->submission_closes_at)) $windowOpen = false;
+                    $windowOpen = $segment ? $segment->isSubmissionOpen() : $hackathon->isSubmissionOpen();
                 @endphp
                 <div class="window-indicator">
                     <span class="window-dot {{ $windowOpen ? 'window-dot-open' : 'window-dot-closed' }}"></span>

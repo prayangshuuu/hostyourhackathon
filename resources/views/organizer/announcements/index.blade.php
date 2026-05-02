@@ -3,111 +3,96 @@
 @section('title', 'Announcements')
 
 @section('content')
-    <div class="page-header">
-        <div class="page-header-breadcrumb">
-            <a href="{{ route('organizer.hackathons.index') }}">My Hackathons</a>
-            <span class="separator">/</span>
-            <a href="{{ route('organizer.hackathons.show', $hackathon) }}">{{ $hackathon->title }}</a>
-            <span class="separator">/</span>
-            <span>Announcements</span>
-        </div>
-        <div class="page-header-row">
-            <h1 class="text-page-title">Announcements</h1>
-            <a href="{{ route('organizer.announcements.create', $hackathon) }}">
-                <x-button variant="primary">New Announcement</x-button>
-            </a>
+    <x-page-header 
+        title="Announcements" 
+        :description="'Broadcast updates to participants of ' . $hackathon->title"
+        :breadcrumbs="[
+            'My Hackathons' => route('organizer.hackathons.index'), 
+            $hackathon->title => route('organizer.hackathons.show', $hackathon),
+            'Announcements' => null
+        ]"
+    >
+        <x-slot:actions>
+            <x-button :href="route('organizer.announcements.create', $hackathon)" variant="primary" icon="plus">New Announcement</x-button>
+        </x-slot:actions>
+    </x-page-header>
+
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Title</th>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Visibility</th>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Status</th>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Timeline</th>
+                        <th class="px-5 h-[38px]"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($announcements as $announcement)
+                        @php
+                            $vis = $announcement->visibility instanceof \App\Enums\AnnouncementVisibility ? $announcement->visibility->value : $announcement->visibility;
+                            $st = $announcement->status instanceof \App\Enums\AnnouncementStatus ? $announcement->status->value : $announcement->status;
+                        @endphp
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="px-5 h-[48px] text-sm font-semibold text-slate-900">{{ $announcement->title }}</td>
+                            <td class="px-5 h-[48px]">
+                                @php
+                                    $visVariant = match($vis) {
+                                        'all' => 'neutral',
+                                        'registered' => 'indigo',
+                                        'segment' => 'amber',
+                                        default => 'neutral',
+                                    };
+                                    $visText = match($vis) {
+                                        'all' => 'All Participants',
+                                        'registered' => 'Registered Teams',
+                                        'segment' => 'Segment: ' . ($announcement->segment->name ?? 'Unknown'),
+                                        default => ucfirst((string) $vis),
+                                    };
+                                @endphp
+                                <x-badge :variant="$visVariant">{{ $visText }}</x-badge>
+                            </td>
+                            <td class="px-5 h-[48px]">
+                                <x-badge :variant="match($st) { 'draft'=>'neutral', 'scheduled'=>'warning', 'published'=>'success', default=>'neutral' }">
+                                    {{ ucfirst($st) }}
+                                </x-badge>
+                            </td>
+                            <td class="px-5 h-[48px] text-xs text-slate-500">
+                                @if($st === 'draft')
+                                    <span class="text-slate-300">Not published</span>
+                                @elseif($st === 'scheduled')
+                                    {{ $announcement->scheduled_at?->format('M d, h:i A') ?? '—' }}
+                                @else
+                                    {{ $announcement->published_at ? $announcement->published_at->format('M d, h:i A') : '—' }}
+                                @endif
+                            </td>
+                            <td class="px-5 h-[48px] text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    @if($st !== 'published')
+                                        <form method="POST" action="{{ route('organizer.announcements.publish', [$hackathon, $announcement]) }}">
+                                            @csrf
+                                            <x-button type="submit" size="sm" variant="primary">Publish</x-button>
+                                        </form>
+                                    @endif
+                                    <x-button :href="route('organizer.announcements.edit', [$hackathon, $announcement])" variant="ghost" size="sm" icon="pencil-square"></x-button>
+                                    <form method="POST" action="{{ route('organizer.announcements.destroy', [$hackathon, $announcement]) }}" onsubmit="return confirm('Delete this announcement?');">
+                                        @csrf @method('DELETE')
+                                        <x-button type="submit" variant="ghost" size="sm" class="text-red-600"><x-heroicon-o-trash class="w-4 h-4" /></x-button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">
+                                <x-empty-state icon="megaphone" title="No announcements found" description="Create one to keep participants updated." />
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <x-alert />
-
-    <x-card>
-        <x-table>
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Visibility</th>
-                    <th>Status</th>
-                    <th>Published / Scheduled At</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($announcements as $announcement)
-                    @php
-                        $vis = $announcement->visibility instanceof \App\Enums\AnnouncementVisibility ? $announcement->visibility->value : $announcement->visibility;
-                        $st = $announcement->status instanceof \App\Enums\AnnouncementStatus ? $announcement->status->value : $announcement->status;
-                    @endphp
-                    <tr>
-                        <td style="font-weight: 500; color: var(--text-primary);">{{ $announcement->title }}</td>
-                        <td>
-                            @php
-                                $visVariant = match($vis) {
-                                    'all' => 'neutral',
-                                    'registered' => 'indigo',
-                                    'segment' => 'amber',
-                                    default => 'neutral',
-                                };
-                                $visText = match($vis) {
-                                    'all' => 'All Participants',
-                                    'registered' => 'Registered Teams',
-                                    'segment' => 'Segment: ' . ($announcement->segment->name ?? 'Unknown'),
-                                    default => ucfirst((string) $vis),
-                                };
-                            @endphp
-                            <x-badge :variant="$visVariant">{{ $visText }}</x-badge>
-                        </td>
-                        <td>
-                            @php
-                                $statusVariant = match($st) {
-                                    'draft' => 'neutral',
-                                    'scheduled' => 'warning',
-                                    'published' => 'success',
-                                    default => 'neutral',
-                                };
-                            @endphp
-                            <x-badge :variant="$statusVariant">{{ ucfirst($st) }}</x-badge>
-                        </td>
-                        <td>
-                            @if($st === 'draft')
-                                <span class="text-muted">—</span>
-                            @elseif($st === 'scheduled')
-                                {{ $announcement->scheduled_at?->format('M d, Y h:i A') ?? '—' }}
-                            @else
-                                {{ $announcement->published_at ? $announcement->published_at->format('M d, Y h:i A') : '—' }}
-                            @endif
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <a href="{{ route('organizer.announcements.edit', [$hackathon, $announcement]) }}" class="btn btn-ghost" style="padding: 6px;" title="Edit">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                </a>
-
-                                @if($st !== 'published')
-                                    <form method="POST" action="{{ route('organizer.announcements.publish', [$hackathon, $announcement]) }}" style="margin: 0;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-primary" style="padding: 4px 12px; font-size: 12px; height: 28px;">Publish</button>
-                                    </form>
-                                @endif
-
-                                <form method="POST" action="{{ route('organizer.announcements.destroy', [$hackathon, $announcement]) }}" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this announcement?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-danger" style="padding: 6px;" title="Delete">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 32px; color: var(--text-muted);">
-                            No announcements found. Create one to keep participants updated.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </x-table>
-    </x-card>
 @endsection

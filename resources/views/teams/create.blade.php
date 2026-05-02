@@ -3,79 +3,101 @@
 @section('title', 'Create Team')
 
 @section('content')
-    {{-- Page Header --}}
-    <div class="page-header">
-        <div class="page-header-breadcrumb">
-            <a href="{{ route('dashboard') }}">Dashboard</a>
-            <span class="separator">/</span>
-            <a href="{{ route('teams.index') }}">Teams</a>
-            <span class="separator">/</span>
-            <span>{{ $hackathon->title }}</span>
-            <span class="separator">/</span>
-            <span>Create Team</span>
+    <x-page-header 
+        title="Create Team" 
+        :description="'Register a team for ' . $hackathon->title"
+        :breadcrumbs="['Dashboard' => route('dashboard'), 'Teams' => route('teams.index'), 'Create' => null]"
+    />
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+        <div class="space-y-6">
+            <x-card title="Team Details" icon="user-group">
+                <form method="POST" action="{{ route('teams.store', $hackathon) }}" class="space-y-6">
+                    @csrf
+
+                    <x-input 
+                        label="Team Name" 
+                        name="name" 
+                        :value="old('name')" 
+                        :error="$errors->first('name')" 
+                        placeholder="e.g. Code Crusaders" 
+                        required 
+                        autofocus 
+                    />
+
+                    @if ($hackathon->hasSegments())
+                        <div>
+                            <label class="block text-2xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                                Select Track / Segment <span class="text-red-500">*</span>
+                            </label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                @foreach ($hackathon->segments()->active()->get() as $segment)
+                                    @php $isFull = $segment->isFull(); @endphp
+                                    <label class="relative block group cursor-{{ $isFull ? 'not-allowed' : 'pointer' }}">
+                                        <input type="radio" name="segment_id" value="{{ $segment->id }}" 
+                                               class="peer sr-only"
+                                               {{ old('segment_id') == $segment->id ? 'checked' : '' }}
+                                               {{ $isFull ? 'disabled' : '' }}>
+                                        <div class="h-full p-4 border rounded-xl transition-all duration-150 {{ $isFull ? 'bg-slate-50 border-slate-100 opacity-60' : 'bg-white border-slate-200 group-hover:border-accent-400 peer-checked:border-accent-500 peer-checked:ring-2 peer-checked:ring-accent-500/10 peer-checked:bg-accent-50/30' }}">
+                                            <div class="flex items-start justify-between mb-2">
+                                                <p class="text-sm font-bold {{ $isFull ? 'text-slate-400' : 'text-slate-900 group-hover:text-accent-600 peer-checked:text-accent-700' }}">{{ $segment->name }}</p>
+                                                @if ($isFull)
+                                                    <x-badge variant="danger">Full</x-badge>
+                                                @endif
+                                            </div>
+                                            @if ($segment->description)
+                                                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">{{ $segment->description }}</p>
+                                            @endif
+                                            <div class="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 uppercase tracking-tight">
+                                                <x-heroicon-o-users class="w-3 h-3" />
+                                                {{ $segment->teams_count }} teams joined
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('segment_id') <p class="text-2xs text-red-500 mt-2">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                        <x-button :href="route('teams.index')" variant="ghost">Cancel</x-button>
+                        <x-button type="submit" variant="primary">Create Team</x-button>
+                    </div>
+                </form>
+            </x-card>
         </div>
-        <div class="page-header-row">
-            <div>
-                <h1 class="text-page-title">Create Team</h1>
-                <p class="page-header-description">Register a team for {{ $hackathon->title }}.</p>
-            </div>
-        </div>
-    </div>
 
-    <div class="card" style="max-width:640px;">
-        <div class="card-header">
-            <h2 class="text-card-title">Team Details</h2>
-        </div>
+        <div class="space-y-5">
+            <x-card title="Hackathon Rules" icon="information-circle">
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0">
+                            <x-heroicon-o-users class="w-4 h-4" />
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-900">Team Size</p>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ $hackathon->min_team_size }}–{{ $hackathon->max_team_size }} members</p>
+                        </div>
+                    </div>
 
-        <form method="POST" action="{{ route('teams.store', $hackathon) }}" id="form-create-team">
-            @csrf
-
-            <div class="form-group">
-                <label for="name" class="form-label">Team Name</label>
-                <input type="text" name="name" id="name"
-                       class="form-input @error('name') is-invalid @enderror"
-                       value="{{ old('name') }}"
-                       placeholder="e.g. Code Crusaders" required>
-                @error('name') <p class="form-error">{{ $message }}</p> @enderror
-            </div>
-
-            @if ($hackathon->segments->count())
-                <div class="form-group">
-                    <label for="segment_id" class="form-label">Segment / Track</label>
-                    <select name="segment_id" id="segment_id" class="form-select @error('segment_id') is-invalid @enderror">
-                        <option value="">— No segment —</option>
-                        @foreach ($hackathon->segments as $segment)
-                            <option value="{{ $segment->id }}" {{ old('segment_id') == $segment->id ? 'selected' : '' }}>
-                                {{ $segment->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('segment_id') <p class="form-error">{{ $message }}</p> @enderror
-                    <p class="form-helper">Choose the track your team will compete in.</p>
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0">
+                            <x-heroicon-o-user class="w-4 h-4" />
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-900">Solo Participation</p>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ $hackathon->allow_solo ? 'Allowed' : 'Not allowed' }}</p>
+                        </div>
+                    </div>
                 </div>
-            @endif
 
-            <div style="display:flex; gap:8px; justify-content:flex-end; padding-top:8px;">
-                <a href="{{ route('teams.index') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary" id="btn-submit-team">Create Team</button>
-            </div>
-        </form>
-    </div>
-
-    {{-- Info card --}}
-    <div class="card" style="max-width:640px; margin-top:24px;">
-        <div style="display:flex; gap:12px;">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0; margin-top:2px; color:var(--color-text-muted);">
-                <path d="M8 1.333A6.667 6.667 0 1 0 14.667 8 6.674 6.674 0 0 0 8 1.333Zm0 10.334a.667.667 0 1 1 0-1.334.667.667 0 0 1 0 1.334ZM8.667 8a.667.667 0 0 1-1.334 0V5.333a.667.667 0 0 1 1.334 0V8Z" fill="currentColor"/>
-            </svg>
-            <div>
-                <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:4px;">
-                    Team size: <strong style="color:var(--color-text-primary); font-weight:var(--font-weight-medium);">{{ $hackathon->min_team_size }}–{{ $hackathon->max_team_size }} members</strong>
-                </p>
-                <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">
-                    Solo participation: <strong style="color:var(--color-text-primary); font-weight:var(--font-weight-medium);">{{ $hackathon->allow_solo ? 'Allowed' : 'Not allowed' }}</strong>
-                </p>
-            </div>
+                <div class="mt-6 p-4 bg-accent-50 border border-accent-100 rounded-xl">
+                    <p class="text-2xs text-accent-700 leading-relaxed font-medium">
+                        Ensure your team name is appropriate. You can add team members after creating the team.
+                    </p>
+                </div>
+            </x-card>
         </div>
     </div>
 @endsection

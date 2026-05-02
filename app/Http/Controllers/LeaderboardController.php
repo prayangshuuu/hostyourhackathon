@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\ScoringService;
 use App\Services\SettingService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class LeaderboardController extends Controller
@@ -22,19 +23,27 @@ class LeaderboardController extends Controller
      *
      * leaderboard_public=false: requires auth — super admin, hackathon organizers, or judges.
      */
-    public function show(Hackathon $hackathon): View
+    public function show(Hackathon $hackathon, Request $request): View
     {
         if (! app(SettingService::class)->get('enable_leaderboard', true)) {
             abort(403, 'Leaderboard is currently disabled.');
         }
 
         $user = Auth::user();
-
         $canViewData = $this->leaderboardPayloadVisibleTo($user, $hackathon);
+
+        $segmentId = $request->get('segment_id');
+        $segment = $segmentId ? $hackathon->segments()->find($segmentId) : null;
 
         $leaderboardEntries = collect();
         if ($canViewData) {
-            $leaderboardEntries = $this->scoringService->getLeaderboard($hackathon)->map(function ($submission) {
+            if ($segment) {
+                $leaderboardEntries = $this->scoringService->getLeaderboard($hackathon, $segment);
+            } else {
+                $leaderboardEntries = $this->scoringService->getHackathonLeaderboard($hackathon);
+            }
+
+            $leaderboardEntries = $leaderboardEntries->map(function ($submission) {
                 return (object) [
                     'team' => $submission->team,
                     'segment' => $submission->team?->segment,
@@ -44,10 +53,14 @@ class LeaderboardController extends Controller
             });
         }
 
+        $segments = $hackathon->segments()->active()->orderBy('order')->get();
+
         return view('leaderboard.show', [
             'hackathon' => $hackathon,
             'leaderboard' => $leaderboardEntries,
             'canView' => $canViewData,
+            'segments' => $segments,
+            'currentSegment' => $segment,
         ]);
     }
 

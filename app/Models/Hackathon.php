@@ -36,8 +36,6 @@ class Hackathon extends Model
         'submission_closes_at',
         'results_at',
         'leaderboard_public',
-        'rules',
-        'prizes',
         'created_by',
     ];
 
@@ -140,6 +138,11 @@ class Hackathon extends Model
         return $this->hasMany(Segment::class)->orderBy('order');
     }
 
+    public function hasSegments(): bool
+    {
+        return $this->segments()->active()->exists();
+    }
+
     public function teams(): HasMany
     {
         return $this->hasMany(Team::class);
@@ -161,6 +164,13 @@ class Hackathon extends Model
     }
 
     public function criteria(): HasMany
+    {
+        return $this->hasMany(ScoringCriterion::class)
+            ->whereNull('segment_id')
+            ->orderBy('order');
+    }
+
+    public function allCriteria(): HasMany
     {
         return $this->hasMany(ScoringCriterion::class)->orderBy('order');
     }

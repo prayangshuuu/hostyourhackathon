@@ -9,6 +9,7 @@ use App\Models\Announcement;
 use App\Models\Hackathon;
 use App\Models\User;
 use App\Notifications\AnnouncementPublished;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class AnnouncementService
@@ -85,17 +86,19 @@ class AnnouncementService
      */
     public function publish(Announcement $announcement): Announcement
     {
-        $publishAt = $announcement->scheduled_at ?? now();
+        return DB::transaction(function () use ($announcement) {
+            $publishAt = $announcement->scheduled_at ?? now();
 
-        $announcement->update([
-            'published_at' => $publishAt,
-            'status' => AnnouncementStatus::Published,
-        ]);
+            $announcement->update([
+                'published_at' => $publishAt,
+                'status' => AnnouncementStatus::Published,
+            ]);
 
-        // Send email and in-app notification to eligible users
-        $this->notifyEligibleUsers($announcement);
+            // Send email and in-app notification to eligible users
+            $this->notifyEligibleUsers($announcement);
 
-        return $announcement;
+            return $announcement;
+        });
     }
 
     // ───────────────────────────────────────────
@@ -105,7 +108,7 @@ class AnnouncementService
     /**
      * Get announcements visible to a participant for a hackathon.
      */
-    public function getVisibleForParticipant(Hackathon $hackathon, User $user)
+    public function getVisibleForParticipant(Hackathon $hackathon, User $user): \Illuminate\Support\Collection
     {
         return Announcement::where('hackathon_id', $hackathon->id)
             ->where('status', AnnouncementStatus::Published)
@@ -168,7 +171,7 @@ class AnnouncementService
     /**
      * Resolve which users should receive the announcement.
      */
-    protected function resolveRecipients(Announcement $announcement, Hackathon $hackathon)
+    protected function resolveRecipients(Announcement $announcement, Hackathon $hackathon): \Illuminate\Support\Collection
     {
         $query = User::query();
 

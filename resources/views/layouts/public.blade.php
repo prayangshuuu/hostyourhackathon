@@ -1,35 +1,35 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en" class="h-full">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ $appSettings->get('app_name', config('app.name', 'HostYourHackathon')) }} - @yield('title', 'Home')</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ $appSettings->get('app_name', 'HostYourHackathon') }} — {{ $title ?? 'Home' }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body style="background: var(--bg); color: var(--text-primary); padding-top: {{ session('impersonating_from') ? '96px' : '56px' }};">
-    @if(session('impersonating_from'))
-        <div style="position: fixed; top: 0; width: 100%; z-index: 200; height: 40px; background: #fef3c7; border-bottom: 1px solid #fde68a; color: #92400e; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;">
-            <div>Impersonating: {{ Auth::user()->name }} ({{ Auth::user()->email }})</div>
-            <a href="{{ route('admin.impersonate.exit') }}" style="color: #92400e; text-decoration: underline;">Exit Impersonation</a>
-        </div>
-    @endif
-    
-    @include('partials.navbar')
+<body class="h-full bg-[#f7f9fb] font-sans antialiased">
 
-    <main style="max-width: 1200px; margin: 0 auto; padding: 0 24px; min-height: calc(100vh - 56px);">
-        @yield('content')
-        {{ $slot ?? '' }}
-    </main>
+  @if(session('impersonating_user_id'))
+    <div class="fixed top-0 inset-x-0 z-[200] h-9 bg-amber-400 flex items-center justify-between px-5">
+      <div class="flex items-center gap-2 text-amber-900 text-xs font-semibold">
+        <x-heroicon-o-eye class="w-3.5 h-3.5" />
+        Impersonating: {{ auth()->user()->name }}
+      </div>
+      <a href="{{ route('admin.impersonate.exit') }}" class="text-xs font-semibold text-amber-900 underline hover:no-underline">Exit</a>
+    </div>
+  @endif
 
-    @stack('scripts')
+  @include('partials.public-nav')
+
+  <main class="{{ session('impersonating_user_id') ? 'pt-[92px]' : 'pt-14' }} min-h-screen">
+    @yield('content')
+    {{ $slot ?? '' }}
+  </main>
+
+  @stack('scripts')
 </body>
 </html>

@@ -13,14 +13,24 @@ return new class extends Migration
     {
         Schema::create('segments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
+            $table->foreignId('hackathon_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->longText('rules')->nullable();
+            $table->longText('prizes')->nullable();
             $table->string('rulebook_path')->nullable();
+            $table->unsignedSmallInteger('submission_limit')->nullable();
+            $table->unsignedSmallInteger('max_teams')->nullable();
+            $table->timestamp('registration_opens_at')->nullable();
+            $table->timestamp('registration_closes_at')->nullable();
+            $table->timestamp('submission_opens_at')->nullable();
+            $table->timestamp('submission_closes_at')->nullable();
+            $table->timestamp('results_at')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->string('cover_image')->nullable();
             $table->unsignedSmallInteger('order')->default(0);
             $table->timestamps();
-
-            $table->index('hackathon_id');
+            $table->softDeletes();
         });
     }
 

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->text('value')->nullable();
             $table->timestamps();
 
-            $table->index('key');
         });
     }
 

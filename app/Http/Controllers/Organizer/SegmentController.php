@@ -8,77 +8,121 @@ use App\Http\Requests\Segment\UpdateSegmentRequest;
 use App\Models\Hackathon;
 use App\Models\Segment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class SegmentController extends Controller
 {
-    /**
-     * Store a new segment under a hackathon.
-     */
-    public function store(StoreSegmentRequest $request, Hackathon $hackathon)
+    public function index(Hackathon $hackathon): View
     {
         $this->authorize('update', $hackathon);
 
-        $segment = $hackathon->segments()->create($request->safe()->except('rulebook'));
+        $segments = $hackathon->segments()->orderBy('order')->get();
 
-        if ($request->hasFile('rulebook')) {
-            $path = $request->file('rulebook')->store("hackathons/{$hackathon->id}/segments/{$segment->id}", 'public');
-            $segment->update(['rulebook' => $path]);
-        }
-
-        if ($request->wantsJson() || str_contains($request->header('Accept'), 'application/json')) {
-            return response()->json(['message' => 'Segment created', 'segment' => $segment]);
-        }
-
-        return back()->with('success', 'Segment created.');
+        return view('organizer.segments.index', compact('hackathon', 'segments'));
     }
 
-    /**
-     * Update an existing segment.
-     */
-    public function update(UpdateSegmentRequest $request, Hackathon $hackathon, Segment $segment)
+    public function create(Hackathon $hackathon): View
     {
         $this->authorize('update', $hackathon);
 
-        $segment->update($request->safe()->except('rulebook'));
+        return view('organizer.segments.create', compact('hackathon'));
+    }
+
+    public function store(StoreSegmentRequest $request, Hackathon $hackathon): RedirectResponse
+    {
+        $this->authorize('update', $hackathon);
+
+        $data = $request->validated();
+        
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image'] = $request->file('cover_image')->store("hackathons/{$hackathon->id}/segments", 'public');
+        }
 
         if ($request->hasFile('rulebook')) {
-            if ($segment->rulebook) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($segment->rulebook);
+            $data['rulebook_path'] = $request->file('rulebook')->store("hackathons/{$hackathon->id}/segments/rulebooks", 'public');
+        }
+
+        $segment = $hackathon->segments()->create($data);
+
+        return redirect()->route('organizer.segments.show', [$hackathon, $segment])
+            ->with('success', 'Segment created successfully.');
+    }
+
+    public function show(Hackathon $hackathon, Segment $segment): View
+    {
+        $this->authorize('update', $hackathon);
+
+        $segment->load(['teams', 'submissions.team', 'judges.user', 'criteria', 'faqs', 'sponsors', 'prizeRecords']);
+
+        return view('organizer.segments.show', compact('hackathon', 'segment'));
+    }
+
+    public function edit(Hackathon $hackathon, Segment $segment): View
+    {
+        $this->authorize('update', $hackathon);
+
+        return view('organizer.segments.edit', compact('hackathon', 'segment'));
+    }
+
+    public function update(UpdateSegmentRequest $request, Hackathon $hackathon, Segment $segment): RedirectResponse
+    {
+        $this->authorize('update', $hackathon);
+
+        $data = $request->validated();
+
+        if ($request->hasFile('cover_image')) {
+            if ($segment->cover_image) {
+                Storage::disk('public')->delete($segment->cover_image);
             }
-            $path = $request->file('rulebook')->store("hackathons/{$hackathon->id}/segments/{$segment->id}", 'public');
-            $segment->update(['rulebook' => $path]);
+            $data['cover_image'] = $request->file('cover_image')->store("hackathons/{$hackathon->id}/segments", 'public');
         }
 
-        if ($request->wantsJson() || str_contains($request->header('Accept'), 'application/json')) {
-            return response()->json(['message' => 'Segment updated', 'segment' => $segment]);
+        if ($request->hasFile('rulebook')) {
+            if ($segment->rulebook_path) {
+                Storage::disk('public')->delete($segment->rulebook_path);
+            }
+            $data['rulebook_path'] = $request->file('rulebook')->store("hackathons/{$hackathon->id}/segments/rulebooks", 'public');
         }
 
-        return back()->with('success', 'Segment updated.');
+        $segment->update($data);
+
+        return redirect()->route('organizer.segments.show', [$hackathon, $segment])
+            ->with('success', 'Segment updated successfully.');
     }
 
-    /**
-     * Delete a segment — nullifies segment_id on related records.
-     */
-    public function destroy(Hackathon $hackathon, Segment $segment)
+    public function destroy(Hackathon $hackathon, Segment $segment): RedirectResponse
     {
         $this->authorize('update', $hackathon);
 
-        // Nullify segment references on related records before deleting
-        $segment->teams()->update(['segment_id' => null]);
-        $segment->judges()->update(['segment_id' => null]);
-        $segment->announcements()->update(['segment_id' => null]);
+        if ($segment->cover_image) {
+            Storage::disk('public')->delete($segment->cover_image);
+        }
 
-        if ($segment->rulebook) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($segment->rulebook);
-            \Illuminate\Support\Facades\Storage::disk('public')->deleteDirectory("hackathons/{$hackathon->id}/segments/{$segment->id}");
+        if ($segment->rulebook_path) {
+            Storage::disk('public')->delete($segment->rulebook_path);
         }
 
         $segment->delete();
 
-        if (request()->wantsJson() || str_contains(request()->header('Accept'), 'application/json')) {
-            return response()->json(['message' => 'Segment deleted']);
+        return redirect()->route('organizer.segments.index', $hackathon)
+            ->with('success', 'Segment deleted successfully.');
+    }
+
+    public function reorder(Request $request, Hackathon $hackathon): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('update', $hackathon);
+
+        $request->validate([
+            'order' => ['required', 'array'],
+            'order.*' => ['required', 'integer', 'exists:segments,id'],
+        ]);
+
+        foreach ($request->order as $index => $id) {
+            Segment::where('id', $id)->where('hackathon_id', $hackathon->id)->update(['order' => $index]);
         }
 
-        return back()->with('success', 'Segment deleted.');
+        return response()->json(['message' => 'Order updated.']);
     }
 }

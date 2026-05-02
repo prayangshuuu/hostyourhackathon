@@ -33,6 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'banned' => CheckBanned::class,
             'registration.allowed' => CheckRegistrationAllowed::class,
             'participant.access' => CheckParticipantAccess::class,
+            'single.mode' => \App\Http\Middleware\SingleModeOnly::class,
+            'multi.mode' => \App\Http\Middleware\MultiModeOnly::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

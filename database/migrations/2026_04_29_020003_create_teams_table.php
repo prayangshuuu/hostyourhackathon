@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
-            $table->foreignId('segment_id')->nullable()->constrained('segments')->nullOnDelete();
+            $table->foreignId('hackathon_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('segment_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('invite_code', 12)->unique();
             $table->boolean('is_banned')->default(false);
@@ -25,7 +25,6 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index('hackathon_id');
             $table->index('is_banned');
         });
     }

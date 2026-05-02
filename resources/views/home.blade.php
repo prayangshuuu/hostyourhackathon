@@ -3,347 +3,159 @@
 @section('title', 'The Hackathon Platform You Actually Own')
 
 @section('content')
-<!-- Section 1: HERO -->
-<section class="pt-20 pb-[72px] text-center max-w-[720px] mx-auto px-4">
-    <div class="inline-flex items-center bg-accent-light text-accent border border-indigo-500/20 rounded-full px-3 py-1 text-xs font-semibold mb-5">
-        <x-heroicon-o-bolt class="w-3.5 h-3.5 mr-1.5" />
+{{-- HERO --}}
+<section style="padding: 80px 24px; text-align: center; max-width: 800px; margin: 0 auto;">
+    <div class="badge badge-indigo" style="margin-bottom: 24px; height: 28px; padding: 0 12px;">
+        <x-heroicon-o-bolt style="width: 14px; height: 14px; margin-right: 8px;" />
         Open Source Hackathon Platform
     </div>
     
-    <h1 class="text-[40px] font-bold text-text-primary leading-[1.15] tracking-[-0.02em]">
+    <h1 style="font-size: 48px; font-weight: 800; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.03em;">
         The Hackathon Platform You Actually Own
     </h1>
     
-    <p class="text-[17px] text-text-secondary leading-[1.65] max-w-[560px] mx-auto mt-4">
+    <p style="font-size: 18px; color: var(--text-secondary); margin-top: 20px; line-height: 1.65; max-width: 600px; margin-left: auto; margin-right: auto;">
         Run university hackathons with full control. Team registration, idea submissions, 
         judging, and announcements — all in one self-hosted platform.
     </p>
     
-    <div class="mt-8 flex justify-center gap-3">
-        <x-button href="{{ route('hackathons.index') }}" variant="primary" size="lg">
-            Browse Hackathons
-            <x-heroicon-m-arrow-right class="w-5 h-5 ml-2" />
-        </x-button>
-        <x-button href="https://github.com/prayangshuuu/hostyourhackathon" variant="secondary" size="lg" target="_blank">
-            <x-heroicon-o-code-bracket class="w-5 h-5 mr-2" />
+    <div style="margin-top: 40px; display: flex; justify-content: center; gap: 16px;">
+        @if($isSingleMode && $singleHackathon)
+            <x-button href="{{ route('single.segments.index') }}" variant="primary" size="lg" iconRight="arrow-right">
+                Explore Hackathon
+            </x-button>
+        @else
+            <x-button href="{{ route('hackathons.index') }}" variant="primary" size="lg" iconRight="arrow-right">
+                Browse Hackathons
+            </x-button>
+        @endif
+        <x-button href="https://github.com/prayangshuuu/hostyourhackathon" variant="secondary" size="lg" target="_blank" icon="code-bracket">
             View on GitHub
         </x-button>
     </div>
     
-    <div class="mt-10 flex flex-wrap justify-center items-center gap-6">
-        <div class="text-[13px] text-text-muted font-medium flex items-center">
-            <x-heroicon-o-users class="w-4 h-4 mr-1.5 inline" />
+    <div style="margin-top: 48px; display: flex; justify-content: center; align-items: center; gap: 24px;">
+        <div style="font-size: 13px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 6px;">
+            <x-heroicon-o-users style="width: 16px; height: 16px;" />
             {{ number_format($stats['participants']) }} participants
         </div>
-        <div class="w-1 h-1 rounded-full bg-border"></div>
-        <div class="text-[13px] text-text-muted font-medium flex items-center">
-            <x-heroicon-o-trophy class="w-4 h-4 mr-1.5 inline" />
-            {{ number_format($stats['hackathons']) }} hackathons hosted
-        </div>
-        <div class="w-1 h-1 rounded-full bg-border"></div>
-        <div class="text-[13px] text-text-muted font-medium flex items-center">
-            <x-heroicon-o-document-text class="w-4 h-4 mr-1.5 inline" />
-            {{ number_format($stats['submissions']) }} submissions
+        <div style="width: 4px; height: 4px; border-radius: 99px; background: var(--border);"></div>
+        <div style="font-size: 13px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 6px;">
+            <x-heroicon-o-trophy style="width: 16px; height: 16px;" />
+            {{ number_format($stats['hackathons']) }} hackathons
         </div>
     </div>
 </section>
 
-<!-- Section 2: STATS BAR -->
-<section class="w-full bg-surface border-y border-border py-7">
-    <div class="max-w-[900px] mx-auto px-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border">
-            <div class="text-center py-4 md:py-0">
-                <div class="text-[28px] font-bold text-text-primary">{{ number_format($stats['hackathons']) }}</div>
-                <div class="text-[13px] text-text-muted mt-1">Hackathons Hosted</div>
+{{-- STATS BAR --}}
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 48px 24px;">
+    <div style="max-width: 1000px; margin: 0 auto;">
+        <div class="grid-4" style="text-align: center;">
+            <div>
+                <div style="font-size: 32px; font-weight: 800; color: var(--text-primary);">{{ number_format($stats['hackathons']) }}</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 500;">Events Hosted</div>
             </div>
-            <div class="text-center py-4 md:py-0">
-                <div class="text-[28px] font-bold text-text-primary">{{ number_format($stats['teams']) }}</div>
-                <div class="text-[13px] text-text-muted mt-1">Teams Registered</div>
+            <div>
+                <div style="font-size: 32px; font-weight: 800; color: var(--text-primary);">{{ number_format($stats['teams']) }}</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 500;">Teams Formed</div>
             </div>
-            <div class="text-center py-4 md:py-0">
-                <div class="text-[28px] font-bold text-text-primary">{{ number_format($stats['submissions']) }}</div>
-                <div class="text-[13px] text-text-muted mt-1">Ideas Submitted</div>
+            <div>
+                <div style="font-size: 32px; font-weight: 800; color: var(--text-primary);">{{ number_format($stats['submissions']) }}</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 500;">Ideas Submitted</div>
             </div>
-            <div class="text-center py-4 md:py-0">
-                <div class="text-[28px] font-bold text-text-primary">{{ number_format($stats['participants']) }}</div>
-                <div class="text-[13px] text-text-muted mt-1">Participants</div>
+            <div>
+                <div style="font-size: 32px; font-weight: 800; color: var(--text-primary);">{{ number_format($stats['participants']) }}</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 500;">Active Builders</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Section 3: ACTIVE HACKATHONS -->
-<section class="py-[72px] px-4 max-w-7xl mx-auto">
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-[22px] font-semibold text-text-primary">Active Hackathons</h2>
-        <a href="{{ route('hackathons.index') }}" class="text-sm font-medium text-accent hover:underline">View all &rarr;</a>
+{{-- ACTIVE EVENTS --}}
+@if(!$isSingleMode)
+<section style="padding: 80px 24px; max-width: 1200px; margin: 0 auto;">
+    <div class="split" style="margin-bottom: 32px;">
+        <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary);">Featured Hackathons</h2>
+        <a href="{{ route('hackathons.index') }}" style="font-size: 14px; font-weight: 600; color: var(--accent);">View all &rarr;</a>
     </div>
 
     @if($activeHackathons->isNotEmpty())
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid-3">
             @foreach($activeHackathons as $hackathon)
                 <x-hackathon-card :hackathon="$hackathon" />
             @endforeach
         </div>
     @else
-        <x-empty-state 
-            icon="calendar" 
-            title="No Active Hackathons"
-            description="No hackathons are currently running. Check back soon or view past events.">
-            <x-slot:action>
-                <x-button href="{{ route('hackathons.index') }}" variant="secondary">View Past Hackathons</x-button>
-            </x-slot:action>
-        </x-empty-state>
+        <div class="empty-state">
+            <x-heroicon-o-calendar class="empty-state-icon" style="width: 48px; height: 48px;" />
+            <h3 class="empty-state-title">No hackathons running right now</h3>
+            <p class="empty-state-description">Check back soon or explore past event results.</p>
+        </div>
     @endif
 </section>
+@endif
 
-<!-- Section 4: FEATURES -->
-<section class="py-[72px] px-4 max-w-7xl mx-auto">
-    <div class="text-center mb-12">
-        <div class="inline-flex items-center bg-accent-light text-accent border border-indigo-500/20 rounded-full px-3 py-1 text-xs font-semibold">
-            Everything You Need
-        </div>
-        <h2 class="text-[28px] font-bold text-text-primary mt-3">Built for organizers, participants, and judges</h2>
+{{-- FEATURES --}}
+<section style="padding: 80px 24px; max-width: 1200px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 64px;">
+        <div class="badge badge-indigo" style="margin-bottom: 16px;">Everything You Need</div>
+        <h2 style="font-size: 32px; font-weight: 800; color: var(--text-primary);">Powerful features for every role</h2>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-        <!-- Feature 1 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-users class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">Team Management</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Invite-based team formation with size limits, solo participation, and leader controls</p>
+    <div class="grid-3">
+        <div class="card" style="padding: 32px;">
+            <div class="stat-icon" style="margin-bottom: 20px;"><x-heroicon-o-users style="width: 22px; height: 22px;" /></div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Team Management</h3>
+            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Invite-based formation, size limits, and full control for team leaders.</p>
         </div>
-        
-        <!-- Feature 2 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-document-text class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">Idea Submissions</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Draft and finalize project submissions with file uploads and a live countdown timer</p>
+        <div class="card" style="padding: 32px;">
+            <div class="stat-icon" style="margin-bottom: 20px;"><x-heroicon-o-document-text style="width: 22px; height: 22px;" /></div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Submissions</h3>
+            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Draft projects, upload assets, and finalize before the live countdown ends.</p>
         </div>
-        
-        <!-- Feature 3 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-trophy class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">Judging & Scoring</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Custom scoring rubrics, per-segment judge assignment, and a controlled leaderboard</p>
-        </div>
-        
-        <!-- Feature 4 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-megaphone class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">Announcements</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Reach all participants or specific segments with scheduled announcements and email delivery</p>
-        </div>
-        
-        <!-- Feature 5 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-puzzle-piece class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">Segments & Tracks</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Organize your hackathon into multiple tracks, each with its own rulebook and judges</p>
-        </div>
-        
-        <!-- Feature 6 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-shield-check class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">Role-Based Access</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Five roles — admin, organizer, participant, judge, mentor — each with precise permissions</p>
-        </div>
-        
-        <!-- Feature 7 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-wrench-screwdriver class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">Self-Hosted</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Runs on shared hosting with PHP 8.1+, MySQL, and Composer — no Docker, no VPS required</p>
-        </div>
-        
-        <!-- Feature 8 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-code-bracket class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">REST API</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Full API with Sanctum authentication and OpenAPI documentation for custom integrations</p>
-        </div>
-        
-        <!-- Feature 9 -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-            <div class="w-11 h-11 bg-accent-light rounded-md flex items-center justify-center mb-4 text-accent">
-                <x-heroicon-o-cog-6-tooth class="w-[22px] h-[22px]" />
-            </div>
-            <h3 class="text-[15px] font-semibold text-text-primary mb-2">Admin Panel</h3>
-            <p class="text-sm text-text-secondary leading-[1.6]">Manage users, settings, feature flags, and SMTP configuration from a single dashboard</p>
+        <div class="card" style="padding: 32px;">
+            <div class="stat-icon" style="margin-bottom: 20px;"><x-heroicon-o-trophy style="width: 22px; height: 22px;" /></div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Judging System</h3>
+            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Custom rubrics, specialized tracks, and automated leaderboard generation.</p>
         </div>
     </div>
 </section>
 
-<!-- Section 5: HOW IT WORKS -->
-<section class="py-[72px] bg-surface border-y border-border px-4">
-    <div class="max-w-7xl mx-auto">
-        <h2 class="text-[22px] font-semibold text-text-primary text-center mb-12">Up and running in minutes</h2>
-        
-        <div class="max-w-[800px] mx-auto flex flex-col md:flex-row gap-8 items-center md:items-start relative mt-12">
-            <!-- Step 1 -->
-            <div class="flex-1 text-center relative z-10">
-                <div class="w-12 h-12 rounded-full bg-accent-light text-accent text-[20px] font-bold flex items-center justify-center mx-auto mb-4">1</div>
-                <h3 class="text-[15px] font-semibold text-text-primary">Install</h3>
-                <p class="text-sm text-text-secondary leading-[1.6] max-w-[240px] mx-auto mt-2">Upload files, visit /install, and follow the 5-step wizard. No CLI needed for shared hosting.</p>
+{{-- HOW IT WORKS --}}
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 80px 24px;">
+    <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 48px;">Up and running in minutes</h2>
+        <div class="grid-3">
+            <div>
+                <div style="width: 40px; height: 40px; border-radius: 99px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-weight: 700;">1</div>
+                <h3 style="font-weight: 700; margin-bottom: 10px;">Install</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Upload files to your host and follow the simple 5-step installation wizard.</p>
             </div>
-            
-            <x-heroicon-m-arrow-right class="hidden md:block w-5 h-5 text-text-muted mt-6" />
-            
-            <!-- Step 2 -->
-            <div class="flex-1 text-center relative z-10">
-                <div class="w-12 h-12 rounded-full bg-accent-light text-accent text-[20px] font-bold flex items-center justify-center mx-auto mb-4">2</div>
-                <h3 class="text-[15px] font-semibold text-text-primary">Configure</h3>
-                <p class="text-sm text-text-secondary leading-[1.6] max-w-[240px] mx-auto mt-2">Set your hackathon details, add segments, invite organizers, and publish when ready.</p>
+            <div>
+                <div style="width: 40px; height: 40px; border-radius: 99px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-weight: 700;">2</div>
+                <h3 style="font-weight: 700; margin-bottom: 10px;">Configure</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Set your event dates, create tracks, and customize the scoring criteria.</p>
             </div>
-            
-            <x-heroicon-m-arrow-right class="hidden md:block w-5 h-5 text-text-muted mt-6" />
-            
-            <!-- Step 3 -->
-            <div class="flex-1 text-center relative z-10">
-                <div class="w-12 h-12 rounded-full bg-accent-light text-accent text-[20px] font-bold flex items-center justify-center mx-auto mb-4">3</div>
-                <h3 class="text-[15px] font-semibold text-text-primary">Run</h3>
-                <p class="text-sm text-text-secondary leading-[1.6] max-w-[240px] mx-auto mt-2">Participants register, form teams, submit ideas, and judges score — all managed from your dashboard.</p>
+            <div>
+                <div style="width: 40px; height: 40px; border-radius: 99px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-weight: 700;">3</div>
+                <h3 style="font-weight: 700; margin-bottom: 10px;">Launch</h3>
+                <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Builders register, teams form, and you manage everything from your dashboard.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Section 6: FOR TEAMS -->
-<section class="py-[72px] px-4 max-w-7xl mx-auto">
-    <h2 class="text-[22px] font-semibold text-text-primary text-center mb-12">Built for every role</h2>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
-        <!-- Role 1 -->
-        <div class="bg-surface border border-border rounded-lg p-5">
-            <x-badge variant="primary" class="mb-3">Organizer</x-badge>
-            <h3 class="text-[15px] font-semibold text-text-primary mt-2.5 mb-3">Organizer</h3>
-            <ul class="space-y-2">
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Create and manage hackathons</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Set timelines and segments</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Manage teams and submissions</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Assign judges and view scores</span>
-                </li>
-            </ul>
-        </div>
-        
-        <!-- Role 2 -->
-        <div class="bg-surface border border-border rounded-lg p-5">
-            <x-badge variant="info" class="mb-3">Participant</x-badge>
-            <h3 class="text-[15px] font-semibold text-text-primary mt-2.5 mb-3">Participant</h3>
-            <ul class="space-y-2">
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Browse and register for hackathons</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Form or join a team</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Submit and finalize your idea</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>View results and leaderboard</span>
-                </li>
-            </ul>
-        </div>
-        
-        <!-- Role 3 -->
-        <div class="bg-surface border border-border rounded-lg p-5">
-            <x-badge variant="warning" class="mb-3">Judge</x-badge>
-            <h3 class="text-[15px] font-semibold text-text-primary mt-2.5 mb-3">Judge</h3>
-            <ul class="space-y-2">
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>View assigned submissions</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Score against custom criteria</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Add remarks per criterion</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>See live total calculation</span>
-                </li>
-            </ul>
-        </div>
-        
-        <!-- Role 4 -->
-        <div class="bg-surface border border-border rounded-lg p-5">
-            <x-badge variant="danger" class="mb-3">Super Admin</x-badge>
-            <h3 class="text-[15px] font-semibold text-text-primary mt-2.5 mb-3">Super Admin</h3>
-            <ul class="space-y-2">
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Full platform control</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>User and role management</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>System settings and feature flags</span>
-                </li>
-                <li class="flex items-start text-[13px] text-text-secondary leading-[1.7]">
-                    <x-heroicon-s-check-circle class="w-3.5 h-3.5 text-success mr-2 mt-1 shrink-0" />
-                    <span>Impersonate any user</span>
-                </li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<!-- Section 7: OPEN SOURCE CTA -->
-<section class="py-[72px] px-4">
-    <div class="bg-surface border border-border rounded-xl p-12 max-w-[640px] mx-auto text-center">
-        <x-heroicon-o-code-bracket-square class="w-10 h-10 text-accent mx-auto mb-4" />
-        <h2 class="text-[22px] font-semibold text-text-primary">Free and Open Source</h2>
-        <p class="text-[15px] text-text-secondary mt-2 leading-[1.65]">
-            HostYourHackathon is MIT licensed. Fork it, customize it, make it yours. Contributions welcome.
+{{-- CALL TO ACTION --}}
+<section style="padding: 80px 24px; text-align: center;">
+    <div class="card" style="max-width: 700px; margin: 0 auto; padding: 64px 32px; background: var(--surface-alt);">
+        <x-heroicon-o-code-bracket-square style="width: 48px; height: 48px; color: var(--accent); margin-bottom: 24px;" />
+        <h2 style="font-size: 28px; font-weight: 800; color: var(--text-primary);">Ready to host?</h2>
+        <p style="font-size: 16px; color: var(--text-secondary); margin-top: 12px; margin-bottom: 32px; line-height: 1.6;">
+            HostYourHackathon is free and open source. Start your own event today.
         </p>
-        <div class="mt-7 flex flex-col sm:flex-row justify-center gap-3">
-            <x-button href="https://github.com/prayangshuuu/hostyourhackathon" variant="secondary" size="lg" target="_blank">
-                <x-heroicon-s-star class="w-5 h-5 mr-2 text-[#E3B341]" />
-                Star on GitHub
-            </x-button>
-            <x-button href="{{ route('hackathons.index') }}" variant="primary" size="lg">
-                Get Started
-                <x-heroicon-m-arrow-right class="w-5 h-5 ml-2" />
-            </x-button>
+        <div style="display: flex; justify-content: center; gap: 16px;">
+            <x-button href="{{ route('register') }}" variant="primary" size="lg">Get Started</x-button>
+            <x-button href="https://github.com/prayangshuuu/hostyourhackathon" variant="secondary" size="lg" target="_blank" icon="star">Star on GitHub</x-button>
         </div>
     </div>
 </section>

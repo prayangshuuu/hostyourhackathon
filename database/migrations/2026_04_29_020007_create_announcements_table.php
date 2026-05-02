@@ -13,19 +13,15 @@ return new class extends Migration
     {
         Schema::create('announcements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
+            $table->foreignId('hackathon_id')->constrained()->cascadeOnDelete();
             $table->string('title');
-            $table->longText('body');
-            $table->enum('visibility', ['all', 'registered', 'segment'])->default('all');
-            $table->foreignId('segment_id')->nullable()->constrained('segments')->nullOnDelete();
-            $table->timestamp('scheduled_at')->nullable();
+            $table->text('body');
             $table->timestamp('published_at')->nullable();
-            $table->enum('status', ['draft', 'scheduled', 'published'])->default('draft');
-            $table->foreignId('created_by')->constrained('users');
+            $table->timestamp('scheduled_at')->nullable();
+            $table->string('status')->default('draft');
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index('hackathon_id');
             $table->index('status');
         });
     }

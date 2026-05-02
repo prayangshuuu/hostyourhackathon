@@ -14,7 +14,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\SettingService::class);
+        $this->app->singleton(\App\Services\HackathonModeService::class);
+        $this->app->singleton(\App\Services\AnnouncementService::class);
+        $this->app->singleton(\App\Services\BanService::class);
+        $this->app->singleton(\App\Services\HackathonService::class);
+        $this->app->singleton(\App\Services\HackathonStatusTransitionService::class);
+        $this->app->singleton(\App\Services\ScoringService::class);
+        $this->app->singleton(\App\Services\SubmissionService::class);
+        $this->app->singleton(\App\Services\TeamService::class);
     }
 
     /**
@@ -22,23 +30,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(SettingService $settings): void
     {
-        View::composer('layouts.app', function ($view) {
-            $view->with('unreadCount', auth()->user()?->unreadNotifications()->count() ?? 0);
-        });
-
         View::composer('*', function ($view) {
-            $view->with('appSettings', app(SettingService::class));
+            $mode = app(\App\Services\HackathonModeService::class);
+            $view->with([
+                'isSingleMode' => $mode->isSingleMode(),
+                'singleHackathon' => $mode->isSingleMode() ? $mode->getActiveHackathon() : null,
+                'appSettings' => app(SettingService::class),
+                'unreadCount' => auth()->check() ? auth()->user()->unreadNotifications()->count() : 0,
+            ]);
         });
 
-        Config::set('app.name', $settings->get('app_name', 'HostYourHackathon'));
+        $this->app->booted(function () use ($settings) {
+            Config::set('app.name', $settings->get('app_name', 'HostYourHackathon'));
 
-        Config::set('mail.mailers.smtp.host', $settings->get('smtp_host'));
-        Config::set('mail.mailers.smtp.port', $settings->get('smtp_port', 587));
-        Config::set('mail.mailers.smtp.username', $settings->get('smtp_username'));
-        Config::set('mail.mailers.smtp.password', $settings->get('smtp_password'));
-        Config::set('mail.mailers.smtp.encryption', $settings->get('smtp_encryption', 'tls'));
-        Config::set('mail.from.name', $settings->get('mail_from_name'));
-        Config::set('mail.from.address', $settings->get('mail_from_address'));
-        Config::set('mail.default', 'smtp');
+            Config::set('mail.mailers.smtp.host', $settings->get('smtp_host'));
+            Config::set('mail.mailers.smtp.port', $settings->get('smtp_port', 587));
+            Config::set('mail.mailers.smtp.username', $settings->get('smtp_username'));
+            Config::set('mail.mailers.smtp.password', $settings->get('smtp_password'));
+            Config::set('mail.mailers.smtp.encryption', $settings->get('smtp_encryption', 'tls'));
+            Config::set('mail.from.name', $settings->get('mail_from_name'));
+            Config::set('mail.from.address', $settings->get('mail_from_address'));
+            Config::set('mail.default', 'smtp');
+        });
     }
 }

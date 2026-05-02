@@ -8,7 +8,7 @@ use App\Http\Helpers\ApiResponse;
 use App\Http\Resources\HackathonResource;
 use App\Http\Resources\LeaderboardEntryResource;
 use App\Models\Hackathon;
-use App\Services\LeaderboardService;
+use App\Services\ScoringService;
 use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -83,7 +83,7 @@ class HackathonController extends Controller
     #[OA\Response(response: 200, description: 'Successful operation')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'Not found')]
-    public function leaderboard(Hackathon $hackathon, Request $request, SettingService $settings, LeaderboardService $leaderboardService): JsonResponse
+    public function leaderboard(Hackathon $hackathon, Request $request, SettingService $settings, ScoringService $scoringService): JsonResponse
     {
         if (! $settings->get('enable_leaderboard', true)) {
             return ApiResponse::error('Leaderboard is currently disabled', [], 403);
@@ -91,14 +91,14 @@ class HackathonController extends Controller
 
         $user = $request->user();
 
-        $isOrganizer = current($user->roles->pluck('name')->toArray()) === 'organizer' && $hackathon->created_by === $user->id;
-        $isSuperAdmin = current($user->roles->pluck('name')->toArray()) === 'super_admin';
+        $isOrganizer = $user->hasRole('organizer') && $hackathon->created_by === $user->id;
+        $isSuperAdmin = $user->hasRole('super_admin');
 
-        if (! $isOrganizer && ! $isSuperAdmin && $hackathon->status !== HackathonStatus::Ended) {
+        if (! $isOrganizer && ! $isSuperAdmin && $hackathon->status !== HackathonStatus::Ended->value) {
             return ApiResponse::error('Leaderboard is not available yet', [], 403);
         }
 
-        $leaderboard = $leaderboardService->getLeaderboard($hackathon);
+        $leaderboard = $scoringService->getHackathonLeaderboard($hackathon);
 
         return ApiResponse::success(LeaderboardEntryResource::collection($leaderboard));
     }

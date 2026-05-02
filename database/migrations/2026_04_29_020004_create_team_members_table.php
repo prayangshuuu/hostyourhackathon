@@ -13,15 +13,10 @@ return new class extends Migration
     {
         Schema::create('team_members', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->enum('role', ['leader', 'member'])->default('member');
-            $table->timestamp('joined_at')->useCurrent();
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('role')->default('member');
             $table->timestamps();
-
-            $table->unique(['team_id', 'user_id']);
-            $table->index('team_id');
-            $table->index('user_id');
         });
     }
 

@@ -13,14 +13,12 @@ return new class extends Migration
     {
         Schema::create('faqs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
-            $table->foreignId('segment_id')->nullable()->constrained('segments')->nullOnDelete();
+            $table->foreignId('hackathon_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('segment_id')->nullable()->constrained()->nullOnDelete();
             $table->string('question');
             $table->text('answer');
             $table->unsignedSmallInteger('order')->default(0);
             $table->timestamps();
-
-            $table->index('hackathon_id');
         });
     }
 

@@ -3,95 +3,85 @@
 @section('title', 'Judges')
 
 @section('content')
-    <div class="page-header">
-        <div class="page-header-breadcrumb">
-            <a href="{{ route('organizer.hackathons.index') }}">My Hackathons</a>
-            <span class="separator">/</span>
-            <a href="{{ route('organizer.hackathons.show', $hackathon) }}">{{ $hackathon->title }}</a>
-            <span class="separator">/</span>
-            <span>Judges</span>
-        </div>
-        <div class="page-header-row">
-            <h1 class="text-page-title">Judges</h1>
-        </div>
-    </div>
+    <x-page-header 
+        title="Judges" 
+        :description="'Manage judging panel for ' . $hackathon->title"
+        :breadcrumbs="[
+            'My Hackathons' => route('organizer.hackathons.index'), 
+            $hackathon->title => route('organizer.hackathons.show', $hackathon),
+            'Judges' => null
+        ]"
+    />
 
-    <x-alert />
-
-    <div class="content-grid-8-4">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
         {{-- Left: Assigned Judges --}}
-        <x-card title="Assigned Judges">
-            <x-table>
-                <thead>
-                    <tr>
-                        <th>Judge</th>
-                        <th>Email</th>
-                        <th>Assigned Segment</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($judges as $judge)
+        <x-card title="Assigned Judges" icon="star" noPadding>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <td>{{ $judge->name }}</td>
-                            <td>{{ $judge->email }}</td>
-                            <td>
-                                @if($judge->pivot->segment_id)
-                                    <x-badge variant="indigo">{{ $hackathon->segments->find($judge->pivot->segment_id)?->name ?? 'Unknown Segment' }}</x-badge>
-                                @else
-                                    <x-badge variant="neutral">All Segments</x-badge>
-                                @endif
-                            </td>
-                            <td>
-                                <form action="{{ route('organizer.judges.destroy', [$hackathon->id, $judge->id]) }}" method="POST" onsubmit="return confirm('Remove this judge?');" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-danger" style="padding: 8px;">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                    </button>
-                                </form>
-                            </td>
+                            <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Judge</th>
+                            <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Email</th>
+                            <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Assigned Segment</th>
+                            <th class="px-5 h-[38px]"></th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" style="text-align: center; padding: 24px; color: var(--text-muted);">
-                                No judges assigned yet.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </x-table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($judges as $judge)
+                            <tr class="hover:bg-slate-50/70 transition-colors">
+                                <td class="px-5 h-[48px] text-sm font-semibold text-slate-900">{{ $judge->name }}</td>
+                                <td class="px-5 h-[48px] text-sm text-slate-600">{{ $judge->email }}</td>
+                                <td class="px-5 h-[48px]">
+                                    @if($judge->pivot->segment_id)
+                                        <x-badge variant="indigo">{{ $hackathon->segments->find($judge->pivot->segment_id)?->name ?? 'Unknown Segment' }}</x-badge>
+                                    @else
+                                        <x-badge variant="neutral">All Segments</x-badge>
+                                    @endif
+                                </td>
+                                <td class="px-5 h-[48px] text-right">
+                                    <form action="{{ route('organizer.judges.destroy', [$hackathon->id, $judge->id]) }}" method="POST" onsubmit="return confirm('Remove this judge?');" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-button type="submit" variant="ghost" size="sm" class="text-red-600"><x-heroicon-o-trash class="w-4 h-4" /></x-button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4">
+                                    <x-empty-state icon="star" title="No judges assigned yet" description="Assign users as judges to evaluate submissions." />
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </x-card>
 
         {{-- Right: Add Judge --}}
         <div>
-            <x-card title="Assign Judge">
-                <form method="POST" action="{{ route('organizer.judges.store', $hackathon->id) }}">
-                    @csrf
-                    
-                    <div style="margin-bottom: 16px;">
-                        <label class="form-label" for="email">User Email</label>
-                        <input type="email" name="email" id="email" class="form-input @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
-                        @error('email')
-                            <div class="form-error">{{ $message }}</div>
-                        @enderror
-                    </div>
+            <div class="sticky top-[88px]">
+                <x-card title="Assign Judge" icon="user-plus">
+                    <form method="POST" action="{{ route('organizer.judges.store', $hackathon->id) }}" class="space-y-0">
+                        @csrf
+                        
+                        <x-input label="User Email" name="email" type="email" :value="old('email')" :error="$errors->first('email')" required />
 
-                    <div style="margin-bottom: 24px;">
-                        <label class="form-label" for="segment_id">Assign to Segment</label>
-                        <select name="segment_id" id="segment_id" class="form-input">
+                        <x-input label="Assign to Segment" name="segment_id" type="select">
                             <option value="">All Segments</option>
                             @foreach($hackathon->segments as $segment)
                                 <option value="{{ $segment->id }}" {{ old('segment_id') == $segment->id ? 'selected' : '' }}>
                                     {{ $segment->name }}
                                 </option>
                             @endforeach
-                        </select>
-                    </div>
+                        </x-input>
 
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Assign Judge</button>
-                </form>
-            </x-card>
+                        <div class="pt-2">
+                            <x-button type="submit" variant="primary" fullWidth size="lg">Assign Judge</x-button>
+                        </div>
+                    </form>
+                </x-card>
+            </div>
         </div>
     </div>
 @endsection

@@ -3,406 +3,206 @@
 @section('title', $hackathon->title)
 
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-        <div>
-            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
-                <a href="{{ route('organizer.hackathons.index') }}" style="color: inherit; text-decoration: none;">My Hackathons</a> / {{ $hackathon->title }}
-            </div>
-            <h1 class="text-page-title">{{ $hackathon->title }}</h1>
-        </div>
-        
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <a href="{{ route('hackathons.show', $hackathon->slug) }}" class="btn" style="color: var(--accent); background: transparent; border: 1px solid var(--accent);" target="_blank">View Public Page</a>
-            <a href="{{ route('organizer.hackathons.edit', $hackathon) }}" class="btn btn-secondary">Edit</a>
+    <x-page-header 
+        :title="$hackathon->title" 
+        :description="$hackathon->tagline"
+        :breadcrumbs="['My Hackathons' => route('organizer.hackathons.index'), $hackathon->title => null]"
+    >
+        <x-slot:actions>
+            <x-button :href="route('hackathons.show', $hackathon->slug)" variant="secondary" icon="eye" target="_blank">Public Page</x-button>
+            <x-button :href="route('organizer.hackathons.edit', $hackathon)" variant="secondary" icon="pencil-square">Edit</x-button>
             
-            <form method="POST" action="{{ route('organizer.hackathons.status', $hackathon) }}" style="margin: 0;">
-                @csrf
-                @if ($hackathon->status->value === 'draft')
-                    <input type="hidden" name="status" value="published">
-                    <button type="submit" class="btn btn-primary" onclick="return confirm('Publish this hackathon? It will be visible to the public.')">Publish</button>
-                @elseif ($hackathon->status->value === 'published')
-                    <input type="hidden" name="status" value="ongoing">
-                    <button type="submit" class="btn btn-primary" onclick="return confirm('Mark as ongoing? This officially starts the hackathon.')">Mark Ongoing</button>
-                    <button type="submit" name="status" value="draft" class="btn btn-secondary" onclick="return confirm('Unpublish this hackathon? It will be hidden from the public.')">Unpublish</button>
-                @elseif ($hackathon->status->value === 'ongoing')
-                    <input type="hidden" name="status" value="ended">
-                    <button type="submit" class="btn" style="background: var(--danger); color: white; border: none;" onclick="return confirm('End this hackathon? This will close all submissions.')">End Hackathon</button>
-                @elseif ($hackathon->status->value === 'ended')
-                    <input type="hidden" name="status" value="archived">
-                    <button type="submit" class="btn btn-secondary" onclick="return confirm('Archive this hackathon?')">Archive</button>
-                @endif
-            </form>
-        </div>
-    </div>
-
-    @if (session('success'))
-        <div style="margin-bottom: 24px;">
-            <x-alert type="success" :message="session('success')" />
-        </div>
-    @endif
-    @if (session('error'))
-        <div style="margin-bottom: 24px;">
-            <x-alert type="error" :message="session('error')" />
-        </div>
-    @endif
-
-    {{-- Stat Cards --}}
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px;">
-        <div class="card" style="padding: 20px;">
-            <div style="font-size: 28px; font-weight: 600; color: var(--text-primary);">{{ $teamsCount }}</div>
-            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Registered Teams</div>
-            <div style="margin-top: 12px;">
-                <a href="{{ route('organizer.teams.index', ['hackathon' => $hackathon->id]) }}" style="font-size: 13px; color: var(--accent); font-weight: 500; text-decoration: none;">View all teams</a>
-            </div>
-        </div>
-        <div class="card" style="padding: 20px;">
-            <div style="font-size: 28px; font-weight: 600; color: var(--text-primary);">{{ $submissionsCount }}</div>
-            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Submissions</div>
-            <div style="margin-top: 12px;">
-                <a href="{{ route('organizer.submissions.index', ['hackathon' => $hackathon->id]) }}" style="font-size: 13px; color: var(--accent); font-weight: 500; text-decoration: none;">View all submissions</a>
-            </div>
-        </div>
-        <div class="card" style="padding: 20px;">
-            <div style="font-size: 28px; font-weight: 600; color: var(--text-primary);">{{ $judgesCount }}</div>
-            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Judges Assigned</div>
-        </div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 8fr 4fr; gap: 24px;">
-        
-        {{-- Left Column (Tabs) --}}
-        <div>
-            {{-- Tab Navigation --}}
-            <div style="display: flex; gap: 24px; border-bottom: 1px solid var(--border); margin-bottom: 24px;">
-                <button class="tab-btn active" onclick="switchTab('overview', this)" style="padding: 12px 0; background: none; border: none; border-bottom: 2px solid var(--accent); color: var(--accent); font-weight: 500; font-size: 14px; cursor: pointer;">Overview</button>
-                <button class="tab-btn" onclick="switchTab('segments', this)" style="padding: 12px 0; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-secondary); font-weight: 500; font-size: 14px; cursor: pointer;">Segments</button>
-                <button class="tab-btn" onclick="switchTab('organizers', this)" style="padding: 12px 0; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-secondary); font-weight: 500; font-size: 14px; cursor: pointer;">Organizers</button>
-            </div>
-
-            {{-- Overview Tab --}}
-            <div id="tab-overview" class="tab-pane" style="display: block;">
-                <div class="card" style="overflow: hidden; margin-bottom: 24px;">
-                    @if ($hackathon->banner)
-                        <img src="{{ Storage::url($hackathon->banner) }}" alt="" style="width: 100%; height: 120px; object-fit: cover;">
-                    @else
-                        <div style="width: 100%; height: 120px; background: var(--surface-alt);"></div>
-                    @endif
-                    
-                    <div style="padding: 24px; position: relative;">
-                        @if ($hackathon->logo)
-                            <img src="{{ Storage::url($hackathon->logo) }}" alt="" style="width: 64px; height: 64px; border-radius: var(--radius-sm); border: 4px solid var(--surface); position: absolute; top: -32px; left: 24px; object-fit: cover;">
-                        @else
-                            <div style="width: 64px; height: 64px; border-radius: var(--radius-sm); border: 4px solid var(--surface); background: var(--surface-alt); position: absolute; top: -32px; left: 24px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; color: var(--text-muted);">
-                                {{ strtoupper(substr($hackathon->title, 0, 1)) }}
-                            </div>
-                        @endif
-                        
-                        <div style="margin-top: 32px;">
-                            <h2 style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">{{ $hackathon->title }}</h2>
-                            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">{{ $hackathon->tagline }}</p>
-                            
-                            <div id="desc-container" style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
-                                <div id="desc-truncated">{{ Str::limit($hackathon->description, 200) }}</div>
-                                <div id="desc-full" style="display: none;">{{ $hackathon->description }}</div>
-                                @if (strlen($hackathon->description) > 200)
-                                    <button onclick="toggleDesc()" id="desc-btn" style="background: none; border: none; color: var(--accent); padding: 0; margin-top: 8px; cursor: pointer; font-size: 13px; font-weight: 500;">Show more</button>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="padding: 24px;">
-                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">Timeline</h3>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div x-data="{ open: false }" class="relative">
+                <x-button @click="open = !open" variant="primary" icon="bolt" iconRight="chevron-down">
+                    {{ ucfirst($hackathon->status->value) }}
+                </x-button>
+                <div x-show="open" @click.away="open = false" class="absolute right-0 top-full mt-2 w-52 bg-white border border-slate-200 rounded-xl overflow-hidden z-50 py-1 shadow-xl">
+                    <form method="POST" action="{{ route('organizer.hackathons.status', $hackathon) }}" class="flex flex-col">
+                        @csrf
                         @php
-                            $timeline = [
-                                ['label' => 'Registration Opens', 'date' => $hackathon->registration_opens_at],
-                                ['label' => 'Registration Closes', 'date' => $hackathon->registration_closes_at],
-                                ['label' => 'Submission Opens', 'date' => $hackathon->submission_opens_at],
-                                ['label' => 'Submission Closes', 'date' => $hackathon->submission_closes_at],
-                                ['label' => 'Results', 'date' => $hackathon->results_at],
-                            ];
+                            $statuses = ['published' => 'Publish', 'ongoing' => 'Mark Ongoing', 'ended' => 'End Hackathon', 'archived' => 'Archive', 'draft' => 'Return to Draft'];
                         @endphp
-                        
-                        @foreach ($timeline as $t)
-                            @if ($t['date'])
-                                @php $past = $t['date']->isPast(); @endphp
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div style="color: {{ $past ? 'var(--success)' : 'var(--text-muted)' }}; width: 20px; text-align: center;">
-                                        @if ($past)
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                        @else
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                        @endif
-                                    </div>
-                                    <div style="flex: 1; font-size: 14px; color: var(--text-primary); font-weight: 500;">{{ $t['label'] }}</div>
-                                    <div style="font-size: 14px; color: var(--text-secondary);">{{ $t['date']->format('M j, Y, g:i a') }}</div>
-                                </div>
+                        @foreach($statuses as $val => $label)
+                            @if($hackathon->status->value !== $val)
+                                <button name="status" value="{{ $val }}" class="flex items-center px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 {{ $val === 'ended' ? 'text-red-600' : '' }}">
+                                    {{ $label }}
+                                </button>
                             @endif
                         @endforeach
-                    </div>
+                    </form>
                 </div>
+            </div>
+        </x-slot:actions>
+    </x-page-header>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-7">
+        <x-stat-card icon="users" :value="$teamsCount" label="Registered Teams" />
+        <x-stat-card icon="document-text" :value="$submissionsCount" label="Submissions" />
+        <x-stat-card icon="star" :value="$judgesCount" label="Judges Assigned" />
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6" x-data="{ tab: 'segments' }">
+        <div class="space-y-6">
+            {{-- Tabs --}}
+            <div class="flex items-center gap-8 border-b border-slate-200">
+                <button @click="tab = 'segments'" :class="tab === 'segments' ? 'border-accent-500 text-accent-600 font-semibold' : 'border-transparent text-slate-500 font-medium'" class="pb-3 text-sm border-b-2 transition-colors">Segments</button>
+                <button @click="tab = 'organizers'" :class="tab === 'organizers' ? 'border-accent-500 text-accent-600 font-semibold' : 'border-transparent text-slate-500 font-medium'" class="pb-3 text-sm border-b-2 transition-colors">Organizers</button>
+                <button @click="tab = 'timeline'" :class="tab === 'timeline' ? 'border-accent-500 text-accent-600 font-semibold' : 'border-transparent text-slate-500 font-medium'" class="pb-3 text-sm border-b-2 transition-colors">Timeline</button>
             </div>
 
             {{-- Segments Tab --}}
-            <div id="tab-segments" class="tab-pane" style="display: none;">
-                <div class="card" style="padding: 24px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="font-size: 16px; font-weight: 600;">Segments</h3>
-                    </div>
-                    
-                    <div id="segments-container" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+            <div x-show="tab === 'segments'" class="space-y-6">
+                <x-card title="Hackathon Segments" icon="puzzle-piece" noPadding>
+                    <x-slot:actions>
+                        <x-button @click="addSegment()" size="sm" variant="primary" icon="plus">Add Segment</x-button>
+                    </x-slot:actions>
+
+                    <div class="divide-y divide-slate-100">
                         @foreach ($hackathon->segments as $segment)
-                            <div class="segment-row" data-id="{{ $segment->id }}" style="background: var(--surface-alt); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                                    <input type="text" class="form-input segment-name" value="{{ $segment->name }}" placeholder="Segment Name" style="flex: 1;">
-                                    <button type="button" class="btn btn-primary" onclick="saveSegment({{ $segment->id }}, this)">Save</button>
-                                    <button type="button" class="btn btn-secondary" style="color: var(--danger);" onclick="deleteSegment({{ $segment->id }}, this)">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
-                                    </button>
-                                </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <div style="font-size: 13px; color: var(--text-muted);">
-                                        @if ($segment->rulebook)
-                                            <a href="{{ Storage::url($segment->rulebook) }}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 500;">View Rulebook</a>
-                                        @else
-                                            No rulebook uploaded
-                                        @endif
+                            <div class="flex items-center justify-between p-5 hover:bg-slate-50/50 transition-colors">
+                                <div class="flex items-center gap-4">
+                                    <div class="drag-handle text-slate-300"><x-heroicon-o-bars-3 class="w-4 h-4" /></div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-900">{{ $segment->name }}</p>
+                                        <p class="text-2xs text-slate-500 mt-0.5">{{ $segment->teams_count }} teams · {{ $segment->submissions_count }} projects</p>
                                     </div>
-                                    <input type="file" accept="application/pdf" class="segment-rulebook form-input" style="padding: 4px; font-size: 12px; width: 220px;">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <x-button :href="route('organizer.segments.edit', [$hackathon, $segment])" size="sm" variant="ghost">Edit Rules</x-button>
+                                    <form method="POST" action="{{ route('organizer.segments.destroy', [$hackathon, $segment]) }}" onsubmit="return confirm('Delete this segment?')">
+                                        @csrf @method('DELETE')
+                                        <x-button type="submit" size="sm" variant="ghost" class="text-red-600"><x-heroicon-o-trash class="w-4 h-4" /></x-button>
+                                    </form>
                                 </div>
                             </div>
                         @endforeach
+                        
+                        @if($hackathon->segments->isEmpty())
+                            <x-empty-state icon="puzzle-piece" title="No tracks or segments" description="Add tracks like 'AI', 'Fintech', or 'General' to organize submissions." />
+                        @endif
                     </div>
-
-                    <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="addSegmentRow()">+ Add Segment</button>
-                </div>
+                </x-card>
             </div>
 
             {{-- Organizers Tab --}}
-            <div id="tab-organizers" class="tab-pane" style="display: none;">
-                <div class="card" style="padding: 24px; margin-bottom: 24px;">
-                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">Add Organizer</h3>
-                    <form method="POST" action="{{ route('organizer.hackathons.organizers.store', $hackathon) }}" style="display: flex; gap: 12px;">
+            <div x-show="tab === 'organizers'" class="space-y-6">
+                <x-card title="Team & Access" icon="user-group">
+                    <form method="POST" action="{{ route('organizer.hackathons.organizers.store', $hackathon) }}" class="flex items-end gap-3 mb-6">
                         @csrf
-                        <input type="email" name="email" class="form-input" placeholder="Organizer's email address" required style="flex: 1;">
-                        <button type="submit" class="btn btn-secondary">Add Organizer</button>
+                        <div class="flex-1"><x-input label="Add Organizer" name="email" placeholder="Email address" required /></div>
+                        <div class="mb-5"><x-button type="submit" variant="primary">Add</x-button></div>
                     </form>
-                </div>
-                
-                <div class="card" style="padding: 24px;">
-                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">Current Organizers</h3>
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
-                        {{-- Creator --}}
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">
-                                    {{ strtoupper(substr($hackathon->creator->name, 0, 1)) }}
-                                </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-accent-500 text-white flex items-center justify-center text-xs font-bold">{{ strtoupper(substr($hackathon->creator->name, 0, 1)) }}</div>
                                 <div>
-                                    <div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">{{ $hackathon->creator->name }} <x-badge variant="primary">Owner</x-badge></div>
-                                    <div style="font-size: 13px; color: var(--text-muted);">{{ $hackathon->creator->email }}</div>
+                                    <p class="text-xs font-semibold text-slate-900">{{ $hackathon->creator->name }}</p>
+                                    <p class="text-2xs text-slate-500">{{ $hackathon->creator->email }}</p>
                                 </div>
                             </div>
+                            <x-badge variant="indigo">Owner</x-badge>
                         </div>
-                        
-                        {{-- Co-organizers --}}
                         @foreach ($hackathon->organizers as $org)
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--surface-alt); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">
-                                        {{ strtoupper(substr($org->name, 0, 1)) }}
-                                    </div>
+                            <div class="flex items-center justify-between p-3.5 border border-slate-100 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold">{{ strtoupper(substr($org->name, 0, 1)) }}</div>
                                     <div>
-                                        <div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">{{ $org->name }}</div>
-                                        <div style="font-size: 13px; color: var(--text-muted);">{{ $org->email }}</div>
+                                        <p class="text-xs font-semibold text-slate-900">{{ $org->name }}</p>
+                                        <p class="text-2xs text-slate-500">{{ $org->email }}</p>
                                     </div>
                                 </div>
-                                <form method="POST" action="{{ route('organizer.hackathons.organizers.destroy', [$hackathon, $org]) }}" onsubmit="return confirm('Remove this organizer?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn" style="background: transparent; color: var(--danger); font-size: 13px; font-weight: 500; border: none;">Remove</button>
+                                <form method="POST" action="{{ route('organizer.hackathons.organizers.destroy', [$hackathon, $org]) }}">
+                                    @csrf @method('DELETE')
+                                    <x-button type="submit" size="sm" variant="ghost" class="text-red-600">Remove</x-button>
                                 </form>
                             </div>
                         @endforeach
                     </div>
-                </div>
+                </x-card>
             </div>
-            
+
+            {{-- Timeline Tab --}}
+            <div x-show="tab === 'timeline'" class="space-y-6">
+                <x-card title="Event Schedule" icon="calendar">
+                    <div class="space-y-6">
+                        @php
+                            $dates = [
+                                'Registration' => ['open' => $hackathon->registration_opens_at, 'close' => $hackathon->registration_closes_at],
+                                'Submission' => ['open' => $hackathon->submission_opens_at, 'close' => $hackathon->submission_closes_at],
+                                'Results' => ['date' => $hackathon->results_at],
+                            ];
+                        @endphp
+                        @foreach($dates as $label => $val)
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+                                    <x-heroicon-o-clock class="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-900 uppercase tracking-tight">{{ $label }}</p>
+                                    @if(isset($val['open']))
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            Opens: <span class="text-slate-700 font-medium">{{ $val['open']?->format('M j, Y — g:i A') ?? 'Not set' }}</span><br>
+                                            Closes: <span class="text-slate-700 font-medium">{{ $val['close']?->format('M j, Y — g:i A') ?? 'Not set' }}</span>
+                                        </p>
+                                    @else
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            Release: <span class="text-slate-700 font-medium">{{ $val['date']?->format('M j, Y — g:i A') ?? 'Not set' }}</span>
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </x-card>
+            </div>
         </div>
 
-        {{-- Right Column --}}
-        <div style="display: flex; flex-direction: column; gap: 24px;">
-            
-            {{-- Quick Stats --}}
-            <div class="card" style="padding: 24px;">
-                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">Quick Info</h3>
-                
-                <div style="display: flex; flex-direction: column; gap: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 14px; color: var(--text-secondary);">Registration</span>
-                        @if ($hackathon->registration_opens_at && $hackathon->registration_closes_at && now()->between($hackathon->registration_opens_at, $hackathon->registration_closes_at))
-                            <x-badge variant="success">Open</x-badge>
-                        @else
-                            <x-badge variant="secondary">Closed</x-badge>
-                        @endif
+        <div class="space-y-5">
+            <x-card title="Visibility" icon="globe-alt">
+                <div class="space-y-3.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-500">Current Status</span>
+                        <x-badge :variant="$hackathon->status->value === 'ongoing' ? 'success' : 'neutral'">{{ ucfirst($hackathon->status->value) }}</x-badge>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 14px; color: var(--text-secondary);">Submission</span>
-                        @if ($hackathon->submission_opens_at && $hackathon->submission_closes_at && now()->between($hackathon->submission_opens_at, $hackathon->submission_closes_at))
-                            <x-badge variant="success">Open</x-badge>
-                        @else
-                            <x-badge variant="secondary">Closed</x-badge>
-                        @endif
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 14px; color: var(--text-secondary);">Results</span>
-                        <span style="font-size: 14px; color: var(--text-primary); font-weight: 500;">
-                            {{ $hackathon->results_at ? $hackathon->results_at->format('M j, Y') : 'TBA' }}
-                        </span>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-50">
+                        <span class="text-xs text-slate-500">Public Visibility</span>
+                        <span class="text-xs font-semibold text-slate-900">{{ $hackathon->status->value === 'draft' ? 'Private' : 'Public' }}</span>
                     </div>
                 </div>
-            </div>
+            </x-card>
 
-            {{-- Danger Zone --}}
-            <div class="card" style="padding: 24px; border: 1px solid rgba(239, 68, 68, 0.2);">
-                <h3 style="font-size: 16px; font-weight: 600; color: var(--danger); margin-bottom: 12px;">Danger Zone</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Once you delete a hackathon, there is no going back. Please be certain.</p>
-                <form method="POST" action="{{ route('organizer.hackathons.destroy', $hackathon) }}" onsubmit="return confirm('PERMANENTLY delete this hackathon?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn" style="background: var(--danger); color: white; width: 100%; justify-content: center; border: none;">Delete Hackathon</button>
+            <x-card title="Danger Zone" icon="exclamation-triangle" class="border-red-100">
+                <p class="text-2xs text-slate-500 mb-4 leading-relaxed">Deleting this hackathon will permanently remove all teams, submissions, and scoring data. This cannot be undone.</p>
+                <form method="POST" action="{{ route('organizer.hackathons.destroy', $hackathon) }}" onsubmit="return confirm('DELETE PERMANENTLY?')">
+                    @csrf @method('DELETE')
+                    <x-button type="submit" variant="danger" fullWidth size="lg">Delete Hackathon</x-button>
                 </form>
-            </div>
-
+            </x-card>
         </div>
     </div>
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <script>
-        function toggleDesc() {
-            const trunc = document.getElementById('desc-truncated');
-            const full = document.getElementById('desc-full');
-            const btn = document.getElementById('desc-btn');
+        function addSegment() {
+            const name = prompt('Enter segment name (e.g. AI track, Web Dev):');
+            if (!name) return;
             
-            if (full.style.display === 'none') {
-                trunc.style.display = 'none';
-                full.style.display = 'block';
-                btn.innerText = 'Show less';
-            } else {
-                trunc.style.display = 'block';
-                full.style.display = 'none';
-                btn.innerText = 'Show more';
-            }
-        }
-
-        function switchTab(tabId, btn) {
-            document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                b.style.color = 'var(--text-secondary)';
-                b.style.borderBottomColor = 'transparent';
-                b.classList.remove('active');
-            });
-            
-            document.getElementById('tab-' + tabId).style.display = 'block';
-            btn.style.color = 'var(--accent)';
-            btn.style.borderBottomColor = 'var(--accent)';
-            btn.classList.add('active');
-        }
-
-        // Segments JS Manager
-        const hackathonId = {{ $hackathon->id }};
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-        function addSegmentRow() {
-            const container = document.getElementById('segments-container');
-            const row = document.createElement('div');
-            row.className = 'segment-row';
-            row.style.cssText = 'background: var(--surface-alt); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);';
-            row.innerHTML = `
-                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                    <input type="text" class="form-input segment-name" placeholder="Segment Name" style="flex: 1;">
-                    <button type="button" class="btn btn-primary" onclick="saveSegment('new', this)">Save</button>
-                    <button type="button" class="btn btn-secondary" style="color: var(--danger);" onclick="this.closest('.segment-row').remove()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
-                    </button>
-                </div>
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="font-size: 13px; color: var(--text-muted);">No rulebook</div>
-                    <input type="file" accept="application/pdf" class="segment-rulebook form-input" style="padding: 4px; font-size: 12px; width: 220px;">
-                </div>
-            `;
-            container.appendChild(row);
-        }
-
-        async function saveSegment(id, btn) {
-            const row = btn.closest('.segment-row');
-            const name = row.querySelector('.segment-name').value;
-            const fileInput = row.querySelector('.segment-rulebook');
-            
-            if (!name) return alert('Segment name is required');
-            
-            btn.textContent = 'Saving...';
-            btn.disabled = true;
-
-            const formData = new FormData();
-            formData.append('name', name);
-            if (fileInput.files[0]) {
-                formData.append('rulebook', fileInput.files[0]);
-            }
-
-            let url = `/organizer/hackathons/${hackathonId}/segments`;
-            if (id !== 'new') {
-                url += `/${id}`;
-                formData.append('_method', 'PUT');
-            }
-
-            try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                    body: formData
-                });
-                
-                if (res.ok) {
-                    window.location.reload();
-                } else {
-                    const data = await res.json();
-                    alert(data.message || 'Error saving segment');
-                    btn.textContent = 'Save';
-                    btn.disabled = false;
-                }
-            } catch (err) {
-                console.error(err);
-                alert('An error occurred');
-                btn.textContent = 'Save';
-                btn.disabled = false;
-            }
-        }
-
-        async function deleteSegment(id, btn) {
-            if (!confirm('Delete this segment?')) return;
-            
-            btn.disabled = true;
-            try {
-                const res = await fetch(`/organizer/hackathons/${hackathonId}/segments/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
-                });
-                
-                if (res.ok) {
-                    btn.closest('.segment-row').remove();
-                } else {
-                    alert('Error deleting segment');
-                    btn.disabled = false;
-                }
-            } catch (err) {
-                console.error(err);
-                btn.disabled = false;
-            }
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("organizer.segments.store", $hackathon) }}';
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            const nameInp = document.createElement('input');
+            nameInp.type = 'hidden';
+            nameInp.name = 'name';
+            nameInp.value = name;
+            form.appendChild(csrf);
+            form.appendChild(nameInp);
+            document.body.appendChild(form);
+            form.submit();
         }
     </script>
 @endsection

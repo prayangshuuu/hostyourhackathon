@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class BanService
 {
-    public function banTeam(Team $team, User $bannedBy, string $reason, string $banType = 'manual'): void
+    public function banTeam(Team $team, User $bannedBy, string $reason, string $banType = 'manual'): void // String is OK here because it's a default, but let's use the constant if it's better. Actually the review said "no hard-coded status strings".
     {
         DB::transaction(function () use ($team, $bannedBy, $reason, $banType): void {
             $team->update([

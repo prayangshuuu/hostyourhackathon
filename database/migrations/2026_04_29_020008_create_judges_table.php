@@ -13,12 +13,10 @@ return new class extends Migration
     {
         Schema::create('judges', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('segment_id')->nullable()->constrained('segments')->nullOnDelete();
+            $table->foreignId('hackathon_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('segment_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
-
-            $table->unique(['hackathon_id', 'user_id']);
         });
     }
 

@@ -1,34 +1,40 @@
-@props(['label', 'name', 'type' => 'text', 'value' => '', 'error' => null, 'hint' => null, 'required' => false])
-
-<div style="margin-bottom: 20px;">
-    @if($label)
-        <label for="{{ $name }}" style="font-size: 13px; font-weight: 500; line-height: 1.5; color: var(--text-secondary); margin-bottom: 6px; display: block;">
-            {{ $label }} @if($required)<span style="color: var(--danger);"> *</span>@endif
-        </label>
-    @endif
-
-    <input 
-        type="{{ $type }}" 
-        id="{{ $name }}" 
-        name="{{ $name }}" 
-        value="{{ old($name, $value) }}"
-        {{ $required ? 'required' : '' }}
-        {{ $attributes }}
-        class="input"
-        style="border-color: {{ $errors->has($name) || $error ? 'var(--danger)' : 'var(--border)' }};"
-        onfocus="this.style.borderColor='var(--accent)'; this.style.outline='none'; this.style.boxShadow='0 0 0 3px var(--accent-ring)';"
-        onblur="this.style.borderColor='{{ $errors->has($name) || $error ? 'var(--danger)' : 'var(--border)' }}'; this.style.boxShadow='none';"
-    >
-
-    @if($errors->has($name) || $error)
-        <div style="font-size: 12px; color: var(--danger); margin-top: 4px;">
-            {{ $error ?? $errors->first($name) }}
-        </div>
-    @endif
-
-    @if($hint)
-        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-            {{ $hint }}
-        </div>
-    @endif
+@props([
+  'label' => null,
+  'name' => '',
+  'type' => 'text',
+  'error' => null,
+  'hint' => null,
+  'required' => false,
+])
+<div class="mb-5">
+  @if($label)
+    <label for="{{ $name }}" class="block text-2xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+      {{ $label }}@if($required)<span class="text-red-500 ml-0.5">*</span>@endif
+    </label>
+  @endif
+  @if($type === 'textarea')
+    <textarea
+      id="{{ $name }}"
+      name="{{ $name }}"
+      class="form-textarea block w-full px-3 py-2.5 text-sm text-slate-900 bg-white border {{ $error ? 'border-red-400 focus:border-red-400 focus:ring-red-500/10' : 'border-slate-200 focus:border-accent-500 focus:ring-accent-500/15' }} rounded-md placeholder:text-slate-400 focus:outline-none focus:ring-3 transition-colors duration-100 resize-y min-h-[96px]"
+      {{ $attributes }}>{{ $slot }}</textarea>
+  @elseif($type === 'select')
+    <select
+      id="{{ $name }}"
+      name="{{ $name }}"
+      class="form-select block w-full h-[36px] pl-3 pr-8 text-sm text-slate-900 bg-white border {{ $error ? 'border-red-400 focus:border-red-400 focus:ring-red-500/10' : 'border-slate-200 focus:border-accent-500 focus:ring-accent-500/15' }} rounded-md focus:outline-none focus:ring-3 transition-colors duration-100"
+      {{ $attributes }}>{{ $slot }}</select>
+  @else
+    <input
+      type="{{ $type }}"
+      id="{{ $name }}"
+      name="{{ $name }}"
+      class="form-input block w-full h-[36px] px-3 text-sm text-slate-900 bg-white border {{ $error ? 'border-red-400 focus:border-red-400 focus:ring-red-500/10' : 'border-slate-200 focus:border-accent-500 focus:ring-accent-500/15' }} rounded-md placeholder:text-slate-400 focus:outline-none focus:ring-3 transition-colors duration-100"
+      {{ $attributes }}>
+  @endif
+  @if($error)
+    <p class="text-2xs text-red-500 mt-1">{{ $error }}</p>
+  @elseif($hint)
+    <p class="text-2xs text-slate-400 mt-1">{{ $hint }}</p>
+  @endif
 </div>

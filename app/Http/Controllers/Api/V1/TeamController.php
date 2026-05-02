@@ -67,8 +67,8 @@ class TeamController extends Controller
         $user = $request->user();
         
         $isMember = $team->members()->where('user_id', $user->id)->exists();
-        $isOrganizer = current($user->roles->pluck('name')->toArray()) === 'organizer' && $team->hackathon->created_by === $user->id;
-        $isSuperAdmin = current($user->roles->pluck('name')->toArray()) === 'super_admin';
+        $isOrganizer = $user->hasRole('organizer') && $team->hackathon->created_by === $user->id;
+        $isSuperAdmin = $user->hasRole('super_admin');
 
         if (!$isMember && !$isOrganizer && !$isSuperAdmin) {
             return ApiResponse::error('Forbidden', [], 403);
@@ -105,11 +105,11 @@ class TeamController extends Controller
         ]);
 
         try {
-            $teamService->updateTeam($team, $request->user(), $validated);
+            $teamService->updateName($team, $request->user(), $validated['name']);
             $team->load('members.user');
             return ApiResponse::success(new TeamResource($team), 'Team updated successfully');
         } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), [], 403);
+            return ApiResponse::error($e->getMessage(), [], 422);
         }
     }
 
@@ -126,7 +126,8 @@ class TeamController extends Controller
     public function join(string $inviteCode, Request $request, TeamService $teamService): JsonResponse
     {
         try {
-            $team = $teamService->joinTeam($inviteCode, $request->user());
+            $team = Team::where('invite_code', $inviteCode)->firstOrFail();
+            $teamService->joinTeam($team, $request->user());
             $team->load('members.user');
             return ApiResponse::success(new TeamResource($team), 'Joined team successfully');
         } catch (\Exception $e) {
@@ -148,7 +149,8 @@ class TeamController extends Controller
     public function removeMember(Team $team, User $user, Request $request, TeamService $teamService): JsonResponse
     {
         try {
-            $teamService->removeMember($team, $request->user(), $user);
+            $member = $team->members()->where('user_id', $user->id)->firstOrFail();
+            $teamService->removeMember($team, $request->user(), $member);
             return ApiResponse::success(null, 'Member removed successfully');
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), [], 403);

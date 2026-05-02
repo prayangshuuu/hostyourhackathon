@@ -31,9 +31,24 @@ use Illuminate\Support\Facades\Route;
 
 // Guest routes (no auth)
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/hackathons', [HackathonController::class, 'publicIndex'])->name('hackathons.index');
-Route::get('/h/{slug}', [HackathonController::class, 'publicShow'])->name('hackathons.show');
-Route::get('/hackathons/{hackathon}/leaderboard', [LeaderboardController::class, 'show'])->name('leaderboard.show');
+Route::middleware('multi.mode')->group(function () {
+    Route::get('/hackathons', [HackathonController::class, 'publicIndex'])->name('hackathons.index');
+    Route::get('/h/{slug}', [HackathonController::class, 'publicShow'])->name('hackathons.show');
+    Route::get('/hackathons/{hackathon}/leaderboard', [LeaderboardController::class, 'show'])->name('leaderboard.show');
+});
+
+Route::middleware('single.mode')->group(function () {
+    Route::get('/segments', [\App\Http\Controllers\Single\SingleSegmentController::class, 'index'])->name('single.segments.index');
+    Route::get('/segments/{segment}', [\App\Http\Controllers\Single\SingleSegmentController::class, 'show'])->name('single.segments.show');
+    
+    Route::middleware(['auth', 'banned', 'verified', 'role:participant|super_admin'])->group(function () {
+        Route::get('/register', [\App\Http\Controllers\Single\SingleTeamController::class, 'create'])->name('single.teams.create');
+        Route::post('/register', [\App\Http\Controllers\Single\SingleTeamController::class, 'store'])->name('single.teams.store');
+        Route::get('/my-team', [\App\Http\Controllers\Single\SingleTeamController::class, 'showMy'])->name('single.teams.my');
+        Route::get('/my-submission', [\App\Http\Controllers\Single\SingleSubmissionController::class, 'showMy'])->name('single.submissions.my');
+        Route::get('/results', [\App\Http\Controllers\Single\SingleLeaderboardController::class, 'show'])->name('single.results');
+    });
+});
 
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
@@ -62,8 +77,11 @@ Route::middleware(['auth', 'banned', 'verified', 'role:participant|judge|mentor|
 // Participant routes
 Route::middleware(['auth', 'banned', 'verified', 'role:participant|super_admin', 'participant.access'])->group(function () {
     Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
-    Route::get('/hackathons/{hackathon}/teams/create', [TeamController::class, 'create'])->name('teams.create');
-    Route::post('/hackathons/{hackathon}/teams', [TeamController::class, 'store'])->name('teams.store');
+    
+    Route::middleware('multi.mode')->group(function () {
+        Route::get('/hackathons/{hackathon}/teams/create', [TeamController::class, 'create'])->name('teams.create');
+        Route::post('/hackathons/{hackathon}/teams', [TeamController::class, 'store'])->name('teams.store');
+    });
 
     Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
     Route::put('/teams/{team}', [TeamController::class, 'update'])->name('teams.update');
@@ -74,8 +92,10 @@ Route::middleware(['auth', 'banned', 'verified', 'role:participant|super_admin',
 
     Route::post('/teams/{team}/members/{user}/remove', [TeamMemberController::class, 'destroy'])->name('teams.members.remove');
 
-    Route::get('/hackathons/{hackathon}/submissions/create', [SubmissionController::class, 'create'])->name('submissions.create');
-    Route::post('/hackathons/{hackathon}/submissions', [SubmissionController::class, 'store'])->name('submissions.store');
+    Route::middleware('multi.mode')->group(function () {
+        Route::get('/hackathons/{hackathon}/submissions/create', [SubmissionController::class, 'create'])->name('submissions.create');
+        Route::post('/hackathons/{hackathon}/submissions', [SubmissionController::class, 'store'])->name('submissions.store');
+    });
     Route::get('/submissions/{submission}/edit', [SubmissionController::class, 'edit'])->name('submissions.edit');
     Route::put('/submissions/{submission}', [SubmissionController::class, 'update'])->name('submissions.update');
     Route::post('/submissions/{submission}/finalize', [SubmissionController::class, 'finalize'])->name('submissions.finalize');
@@ -85,8 +105,10 @@ Route::middleware(['auth', 'banned', 'verified', 'role:participant|super_admin',
     Route::delete('/submission-files/{submissionFile}', [SubmissionFileController::class, 'destroy'])->name('submissions.files.destroy');
 
     // Announcements
-    Route::get('/hackathons/{hackathon}/announcements', [ParticipantAnnouncementController::class, 'index'])->name('participant.announcements.index');
-    Route::get('/hackathons/{hackathon}/announcements/{announcement}', [ParticipantAnnouncementController::class, 'show'])->name('participant.announcements.show');
+    Route::middleware('multi.mode')->group(function () {
+        Route::get('/hackathons/{hackathon}/announcements', [ParticipantAnnouncementController::class, 'index'])->name('participant.announcements.index');
+        Route::get('/hackathons/{hackathon}/announcements/{announcement}', [ParticipantAnnouncementController::class, 'show'])->name('participant.announcements.show');
+    });
 });
 
 // Organizer routes
@@ -101,9 +123,22 @@ Route::middleware(['auth', 'banned', 'verified', 'role:organizer|super_admin'])
         Route::post('hackathons/{hackathon}/organizers', [OrganizerHackathonController::class, 'addOrganizer'])->name('hackathons.organizers.store');
         Route::delete('hackathons/{hackathon}/organizers/{user}', [OrganizerHackathonController::class, 'removeOrganizer'])->name('hackathons.organizers.destroy');
 
+        Route::patch('hackathons/{hackathon}/segments/reorder', [SegmentController::class, 'reorder'])->name('segments.reorder');
         Route::resource('hackathons.segments', SegmentController::class)->names('segments')->parameters(['hackathons' => 'hackathon']);
-        Route::resource('hackathons.announcements', AnnouncementController::class)->names('announcements')->parameters(['hackathons' => 'hackathon']);
+        Route::prefix('hackathons/{hackathon}/segments/{segment}')->name('segments.')->group(function () {
+            Route::resource('prizes', \App\Http\Controllers\Organizer\SegmentPrizeController::class);
+            Route::resource('faqs', \App\Http\Controllers\Organizer\SegmentFaqController::class);
+            Route::resource('sponsors', \App\Http\Controllers\Organizer\SegmentSponsorController::class);
+            Route::resource('criteria', \App\Http\Controllers\Organizer\SegmentCriteriaController::class);
+            
+            Route::post('judges', [\App\Http\Controllers\Organizer\SegmentJudgeController::class, 'store'])->name('judges.store');
+            Route::delete('judges/{judge}', [\App\Http\Controllers\Organizer\SegmentJudgeController::class, 'destroy'])->name('judges.destroy');
+            
+            Route::post('rulebook', [\App\Http\Controllers\Organizer\SegmentRulebookController::class, 'store'])->name('rulebook.store');
+            Route::delete('rulebook', [\App\Http\Controllers\Organizer\SegmentRulebookController::class, 'destroy'])->name('rulebook.destroy');
+        });
 
+        Route::resource('hackathons.announcements', AnnouncementController::class)->names('announcements')->parameters(['hackathons' => 'hackathon']);
         Route::post('hackathons/{hackathon}/announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])->name('announcements.publish');
 
         Route::resource('hackathons.criteria', ScoringCriteriaController::class)->names('criteria')->parameters(['hackathons' => 'hackathon']);

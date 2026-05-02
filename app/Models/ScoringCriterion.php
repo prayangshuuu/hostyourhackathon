@@ -18,6 +18,7 @@ class ScoringCriterion extends Model
      */
     protected $fillable = [
         'hackathon_id',
+        'segment_id',
         'name',
         'description',
         'max_score',
@@ -35,6 +36,11 @@ class ScoringCriterion extends Model
     public function hackathon(): BelongsTo
     {
         return $this->belongsTo(Hackathon::class);
+    }
+
+    public function segment(): BelongsTo
+    {
+        return $this->belongsTo(Segment::class);
     }
 
     public function scores(): HasMany

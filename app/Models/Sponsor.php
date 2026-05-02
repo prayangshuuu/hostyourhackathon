@@ -16,6 +16,7 @@ class Sponsor extends Model
      */
     protected $fillable = [
         'hackathon_id',
+        'segment_id',
         'name',
         'logo',
         'url',
@@ -34,5 +35,10 @@ class Sponsor extends Model
     public function hackathon(): BelongsTo
     {
         return $this->belongsTo(Hackathon::class);
+    }
+
+    public function segment(): BelongsTo
+    {
+        return $this->belongsTo(Segment::class);
     }
 }

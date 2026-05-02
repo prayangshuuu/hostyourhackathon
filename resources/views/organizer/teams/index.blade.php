@@ -3,54 +3,56 @@
 @section('title', 'Teams')
 
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h1 class="text-page-title">Teams</h1>
-    </div>
+    <x-page-header title="Teams" description="Manage all registered teams across your hackathons." :breadcrumbs="['Dashboard' => route('dashboard'), 'Teams' => null]" />
 
-    @if (session('success'))
-        <div style="margin-bottom: 24px;"><x-alert type="success" :message="session('success')" /></div>
-    @endif
-    @if (session('error'))
-        <div style="margin-bottom: 24px;"><x-alert type="error" :message="session('error')" /></div>
-    @endif
+    <x-card class="mb-6">
+        <form method="GET" action="{{ route('organizer.teams.index') }}" class="flex items-end gap-4">
+            <div class="flex-1">
+                <x-input label="Filter by Hackathon" name="hackathon" type="select" onchange="this.form.submit()">
+                    <option value="">All Hackathons</option>
+                    @foreach ($hackathons as $h)
+                        <option value="{{ $h->id }}" @selected(request('hackathon') == $h->id)>{{ $h->title }}</option>
+                    @endforeach
+                </x-input>
+            </div>
+        </form>
+    </x-card>
 
-    <form method="GET" action="{{ route('organizer.teams.index') }}" class="card" style="padding: 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: flex-end;">
-        <div style="flex: 1;">
-            <label for="hackathon" class="form-label">Hackathon</label>
-            <select name="hackathon" id="hackathon" class="form-input" onchange="this.form.submit()">
-                <option value="">All</option>
-                @foreach ($hackathons as $h)
-                    <option value="{{ $h->id }}" @selected(request('hackathon') == $h->id)>{{ $h->title }}</option>
-                @endforeach
-            </select>
-        </div>
-    </form>
-
-    <div class="card" style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="border-bottom: 1px solid var(--border);">
-                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Team</th>
-                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Hackathon</th>
-                    <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Members</th>
-                    <th style="text-align: right; padding: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($teams as $team)
-                    <tr style="border-bottom: 1px solid var(--border);">
-                        <td style="padding: 12px; font-weight: 500;">{{ $team->name }}</td>
-                        <td style="padding: 12px; color: var(--text-secondary);">{{ $team->hackathon->title }}</td>
-                        <td style="padding: 12px; color: var(--text-secondary);">{{ $team->members_count }}</td>
-                        <td style="padding: 12px; text-align: right;">
-                            <a href="{{ route('organizer.teams.show', $team) }}" style="color: var(--accent); font-weight: 500; text-decoration: none;">Manage</a>
-                        </td>
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Team</th>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Hackathon</th>
+                        <th class="px-5 h-[38px] text-2xs font-semibold text-slate-400 text-left uppercase tracking-[0.06em]">Members</th>
+                        <th class="px-5 h-[38px]"></th>
                     </tr>
-                @empty
-                    <tr><td colspan="4" style="padding: 32px; text-align: center; color: var(--text-secondary);">No teams found.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-        <div style="padding: 16px;">{{ $teams->links() }}</div>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($teams as $team)
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="px-5 h-[48px] text-sm font-semibold text-slate-900">{{ $team->name }}</td>
+                            <td class="px-5 h-[48px] text-sm text-slate-600">{{ $team->hackathon->title }}</td>
+                            <td class="px-5 h-[48px] text-sm text-slate-600">{{ $team->members_count }}</td>
+                            <td class="px-5 h-[48px] text-right">
+                                <x-button :href="route('organizer.teams.show', $team)" variant="ghost" size="sm">Manage</x-button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4">
+                                <x-empty-state icon="users" title="No teams found" description="Check back later once teams start registering." />
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($teams->hasPages())
+            <div class="px-5 py-4 border-t border-slate-100 bg-slate-50">
+                {{ $teams->links() }}
+            </div>
+        @endif
     </div>
 @endsection

@@ -49,7 +49,9 @@ class HackathonService
         // Default allow_solo to false if not provided
         $data['allow_solo'] = $data['allow_solo'] ?? false;
 
-        return Hackathon::create($data);
+        $hackathon = Hackathon::create($data);
+        app(HackathonModeService::class)->invalidateCache();
+        return $hackathon;
     }
 
     /**
@@ -59,6 +61,8 @@ class HackathonService
     {
         $data['allow_solo'] = $data['allow_solo'] ?? false;
         
-        return $hackathon->update($data);
+        $result = $hackathon->update($data);
+        app(HackathonModeService::class)->invalidateCache();
+        return $result;
     }
 }

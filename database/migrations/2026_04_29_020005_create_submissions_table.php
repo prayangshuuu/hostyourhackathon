@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
-            $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
-            $table->foreignId('segment_id')->nullable()->constrained('segments')->nullOnDelete();
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('hackathon_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('segment_id')->nullable()->constrained()->nullOnDelete();
             $table->string('title');
             $table->text('problem_statement');
             $table->longText('description');
@@ -32,8 +32,6 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index('hackathon_id');
-            $table->index('team_id');
             $table->index('is_draft');
             $table->index('disqualified');
         });

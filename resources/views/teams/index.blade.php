@@ -3,49 +3,55 @@
 @section('title', 'My Teams')
 
 @section('content')
-    {{-- Page Header --}}
-    <div class="page-header">
-        <div class="page-header-breadcrumb">
-            <a href="{{ route('dashboard') }}">Dashboard</a>
-            <span class="separator">/</span>
-            <span>My Teams</span>
-        </div>
-        <div class="page-header-row">
-            <div>
-                <h1 class="text-page-title">My Teams</h1>
-                <p class="page-header-description">Teams you've created or joined.</p>
-            </div>
-        </div>
-    </div>
+    <x-page-header 
+        title="My Teams" 
+        description="Teams you've created or joined across all hackathons."
+        :breadcrumbs="['My Teams' => null]"
+    />
 
     @if ($teams->count())
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:16px;">
+        <div class="grid-3">
             @foreach ($teams as $team)
-                <a href="{{ route('teams.show', $team) }}" class="card card-clickable" style="text-decoration:none;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-                        <h3 class="text-card-title">{{ $team->name }}</h3>
-                        <span class="badge badge-{{ $team->hackathon->status->value }}">{{ ucfirst($team->hackathon->status->value) }}</span>
+                <div class="card" style="display: flex; flex-direction: column;">
+                    <div class="card-body" style="flex: 1;">
+                        <div class="split" style="margin-bottom: 12px;">
+                            <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">{{ $team->name }}</h3>
+                            <x-badge variant="{{ $team->hackathon->status->value === 'ongoing' ? 'success' : 'neutral' }}">
+                                {{ ucfirst($team->hackathon->status->value) }}
+                            </x-badge>
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                            <div style="font-weight: 600; color: var(--text-primary);">{{ $team->hackathon->title }}</div>
+                            @if ($team->segment)
+                                <div style="color: var(--accent); margin-top: 2px;">{{ $team->segment->name }}</div>
+                            @endif
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--text-muted);">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <x-heroicon-o-users style="width: 14px; height: 14px;" />
+                                {{ $team->members_count }} members
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <x-heroicon-o-calendar style="width: 14px; height: 14px;" />
+                                {{ $team->created_at->format('M j') }}
+                            </div>
+                        </div>
                     </div>
-                    <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:12px;">
-                        {{ $team->hackathon->title }}
-                        @if ($team->segment)
-                            · {{ $team->segment->name }}
-                        @endif
-                    </p>
-                    <div style="display:flex; align-items:center; gap:16px; font-size:var(--font-size-xs); color:var(--color-text-muted);">
-                        <span>{{ $team->members_count }} / {{ $team->hackathon->max_team_size }} members</span>
-                        <span>Joined {{ $team->created_at->format('M d') }}</span>
+                    <div class="card-footer" style="background: var(--surface-alt);">
+                        <x-button href="{{ $isSingleMode ? route('single.teams.my') : route('teams.show', $team) }}" variant="secondary" size="sm" fullWidth>
+                            Manage Team
+                        </x-button>
                     </div>
-                </a>
+                </div>
             @endforeach
         </div>
     @else
-        <div class="card">
-            <div class="ds-table-empty">
-                <div style="text-align:center;">
-                    <p style="margin-bottom:8px;">You haven't joined any teams yet.</p>
-                    <p style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Ask an organizer for a hackathon link or use an invite code to join a team.</p>
-                </div>
+        <div class="empty-state">
+            <x-heroicon-o-users class="empty-state-icon" style="width: 48px; height: 48px;" />
+            <h3 class="empty-state-title">No teams yet</h3>
+            <p class="empty-state-description">You haven't joined any teams. Browse active hackathons to get started.</p>
+            <div class="empty-state-action">
+                <x-button href="{{ $isSingleMode ? route('single.segments.index') : route('hackathons.index') }}" variant="primary">Browse Hackathons</x-button>
             </div>
         </div>
     @endif

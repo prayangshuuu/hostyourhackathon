@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('scoring_criteria', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hackathon_id')->constrained('hackathons')->cascadeOnDelete();
+            $table->foreignId('hackathon_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('segment_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
-            $table->string('description')->nullable();
-            $table->unsignedSmallInteger('max_score')->default(10);
+            $table->text('description')->nullable();
+            $table->unsignedInteger('max_score')->default(10);
             $table->unsignedSmallInteger('order')->default(0);
             $table->timestamps();
-
-            $table->index('hackathon_id');
         });
     }
 

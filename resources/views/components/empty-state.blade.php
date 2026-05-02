@@ -1,16 +1,9 @@
-@props([
-    'icon' => 'heroicon-o-inbox',
-    'title',
-    'description',
-])
-
-<div style="padding: 48px 24px; text-align: center; display: flex; flex-direction: column; align-items: center;">
-    @svg($icon, 'w-10 h-10')
-    <h3 style="margin: 12px 0 0 0; font-size: 15px; line-height: 1.5; font-weight: 600; color: var(--text-primary);">{{ $title }}</h3>
-    <p style="margin: 4px 0 0 0; max-width: 320px; font-size: 14px; line-height: 1.6; color: var(--text-muted);">{{ $description }}</p>
-    @if (isset($action))
-        <div style="margin-top: 16px;">
-            {{ $action }}
-        </div>
-    @endif
+@props(['icon' => 'inbox', 'title', 'description' => null])
+<div class="flex flex-col items-center justify-center py-14 px-6 text-center">
+  <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-3.5">
+    <x-dynamic-component :component="'heroicon-o-'.$icon" class="w-6 h-6" />
+  </div>
+  <p class="text-base font-semibold text-slate-800 mt-1">{{ $title }}</p>
+  @if($description)<p class="text-xs text-slate-500 mt-1.5 max-w-xs leading-relaxed">{{ $description }}</p>@endif
+  @isset($action)<div class="mt-5">{{ $action }}</div>@endisset
 </div>

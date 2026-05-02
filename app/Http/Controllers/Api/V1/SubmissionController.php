@@ -61,7 +61,11 @@ class SubmissionController extends Controller
         ]);
 
         try {
-            $submission = $submissionService->store($hackathon, $request->user(), $validated);
+            $team = $request->user()->teams()->where('hackathon_id', $hackathon->id)->first();
+            if (!$team) {
+                return ApiResponse::error('You must belong to a team to create a submission', [], 422);
+            }
+            $submission = $submissionService->saveDraft($team, $hackathon, $request->user(), $validated);
             $submission->load('files', 'team');
             return ApiResponse::success(new SubmissionResource($submission), 'Submission created successfully');
         } catch (\Exception $e) {
@@ -84,14 +88,14 @@ class SubmissionController extends Controller
     {
         $user = $request->user();
         
-        $isMember = current($user->roles->pluck('name')->toArray()) === 'participant' && 
+        $isMember = $user->hasRole('participant') && 
                     $submission->team->members()->where('user_id', $user->id)->exists();
         
-        $isOrganizer = current($user->roles->pluck('name')->toArray()) === 'organizer' && 
+        $isOrganizer = $user->hasRole('organizer') && 
                        $submission->hackathon->created_by === $user->id;
                        
-        $isSuperAdmin = current($user->roles->pluck('name')->toArray()) === 'super_admin';
-        $isJudge = current($user->roles->pluck('name')->toArray()) === 'judge';
+        $isSuperAdmin = $user->hasRole('super_admin');
+        $isJudge = $user->hasRole('judge');
 
         if (!$isMember && !$isOrganizer && !$isSuperAdmin && !$isJudge) {
             return ApiResponse::error('Forbidden', [], 403);
@@ -140,7 +144,7 @@ class SubmissionController extends Controller
         ]);
 
         try {
-            $submissionService->update($submission, $request->user(), $validated);
+            $submissionService->updateDraft($submission, $request->user(), $validated);
             $submission->load('files', 'team');
             return ApiResponse::success(new SubmissionResource($submission), 'Submission updated successfully');
         } catch (\Exception $e) {
@@ -199,7 +203,7 @@ class SubmissionController extends Controller
         ]);
 
         try {
-            $file = $submissionService->addFile($submission, $request->user(), $request->file('file'));
+            $file = $submissionService->storeFile($submission, $request->file('file'));
             return ApiResponse::success(new SubmissionFileResource($file), 'File uploaded successfully');
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), [], 422);
@@ -224,7 +228,7 @@ class SubmissionController extends Controller
         }
 
         try {
-            $submissionService->removeFile($submission, $request->user(), $file);
+            $submissionService->deleteFile($file);
             return ApiResponse::success(null, 'File deleted successfully');
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), [], 422);

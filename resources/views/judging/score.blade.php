@@ -1,164 +1,145 @@
 @extends('layouts.app')
 
 @section('title', 'Score — ' . $submission->title)
-@section('meta_description', 'Score submission: ' . $submission->title)
 
 @section('content')
-    {{-- Page Header --}}
-    <div class="page-header">
-        <div class="page-header-breadcrumb">
-            <a href="{{ route('judge.dashboard') }}">Dashboard</a>
-            <span class="separator">/</span>
-            <span>{{ $submission->team->name }}</span>
-            <span class="separator">/</span>
-            <span>Score</span>
-        </div>
-        <div class="page-header-row">
-            <h1 class="text-page-title">{{ $submission->title }}</h1>
-        </div>
-    </div>
+    <x-page-header 
+        :title="$submission->title" 
+        :description="'Team: ' . $submission->team->name"
+        :breadcrumbs="[
+            'Dashboard' => route('judge.dashboard'), 
+            $submission->team->name => null,
+            'Score' => null
+        ]"
+    />
 
-    <div class="content-grid-8-4">
-        {{-- Left Column: Submission Detail (read-only) --}}
-        <div class="card">
-            <div class="definition-item">
-                <div class="definition-label">Project Title</div>
-                <div class="definition-value">{{ $submission->title }}</div>
-            </div>
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+        {{-- Left Column: Submission Detail --}}
+        <div class="space-y-6">
+            <x-card title="Submission Details" icon="document-text">
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-2xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Problem Statement</p>
+                        <p class="text-sm text-slate-800 leading-relaxed">{{ $submission->problem_statement }}</p>
+                    </div>
 
-            <div class="definition-item">
-                <div class="definition-label">Problem Statement</div>
-                <div class="definition-value">{{ $submission->problem_statement }}</div>
-            </div>
+                    <div>
+                        <p class="text-2xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Description</p>
+                        <p class="text-sm text-slate-800 leading-relaxed">{{ $submission->description }}</p>
+                    </div>
 
-            <div class="definition-item">
-                <div class="definition-label">Description</div>
-                <div class="definition-value">{{ $submission->description }}</div>
-            </div>
-
-            <hr class="form-divider">
-
-            <div class="definition-item">
-                <div class="definition-label">Tech Stack</div>
-                <div class="definition-value">{{ $submission->tech_stack }}</div>
-            </div>
-
-            {{-- Links as clickable chips --}}
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
-                @if ($submission->demo_url)
-                    <a href="{{ $submission->demo_url }}" target="_blank" rel="noopener" class="link-chip">
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M6.667 8.667a3.333 3.333 0 0 0 5.026.36l2-2a3.334 3.334 0 0 0-4.713-4.714L7.667 3.627" stroke="currentColor" stroke-width="1.33" stroke-linecap="round"/><path d="M9.333 7.333a3.333 3.333 0 0 0-5.026-.36l-2 2a3.334 3.334 0 0 0 4.713 4.714l1.313-1.314" stroke="currentColor" stroke-width="1.33" stroke-linecap="round"/></svg>
-                        Demo
-                    </a>
-                @endif
-                @if ($submission->repo_url)
-                    <a href="{{ $submission->repo_url }}" target="_blank" rel="noopener" class="link-chip">
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M6 14s-1-.5-1-2 .5-2.5 0-3c-.5-.5-2-1-2-3s1.5-2.5 2-2.5c.5 0 1.5.5 2 .5h2c.5 0 1.5-.5 2-.5s2 .5 2 2.5-1.5 2.5-2 3c-.5.5 0 1 0 3s-1 2-1 2" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Repository
-                    </a>
-                @endif
-            </div>
-
-            <hr class="form-divider">
-
-            {{-- Files --}}
-            <div>
-                <p class="text-card-title" style="margin-bottom:12px;">Attachments</p>
-                @if ($submission->files->count())
-                    @foreach ($submission->files as $file)
-                        <div class="file-row">
-                            <svg class="file-row-icon" viewBox="0 0 16 16" fill="none">
-                                @if ($file->file_type === 'pdf')
-                                    <path d="M4 1h5.586L13 4.414V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.2"/>
-                                    <path d="M5 9h6M5 11h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                @else
-                                    <path d="M4 1h5.586L13 4.414V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.2"/>
-                                    <path d="M5 8l2 3 2-2 2 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                                @endif
-                            </svg>
-                            <span class="file-row-name">{{ $file->original_name }}</span>
-                            <span class="file-row-size">{{ number_format($file->file_size_kb, 0) }} KB</span>
+                    <div>
+                        <p class="text-2xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Tech Stack</p>
+                        <div class="flex flex-wrap gap-1.5 mt-1.5">
+                            @foreach(explode(',', $submission->tech_stack) as $tech)
+                                <x-badge variant="indigo">{{ trim($tech) }}</x-badge>
+                            @endforeach
                         </div>
-                    @endforeach
-                @else
-                    <p class="text-helper">No files attached.</p>
-                @endif
-            </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        @if ($submission->demo_url)
+                            <x-button :href="$submission->demo_url" variant="secondary" size="sm" icon="play" target="_blank">View Demo</x-button>
+                        @endif
+                        @if ($submission->repo_url)
+                            <x-button :href="$submission->repo_url" variant="secondary" size="sm" icon="code-bracket" target="_blank">Repository</x-button>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-slate-100">
+                    <h4 class="text-xs font-semibold text-slate-900 mb-4">Attachments</h4>
+                    @if ($submission->files->count())
+                        <div class="space-y-2">
+                            @foreach ($submission->files as $file)
+                                <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                                    <div class="flex items-center gap-3">
+                                        <x-heroicon-o-document class="w-4 h-4 text-slate-400" />
+                                        <span class="text-xs font-medium text-slate-700 truncate max-w-[200px]">{{ $file->original_name }}</span>
+                                        <span class="text-2xs text-slate-400">{{ number_format($file->file_size_kb, 0) }} KB</span>
+                                    </div>
+                                    <x-button :href="Storage::url($file->file_path)" variant="ghost" size="sm" icon="arrow-down-tray" target="_blank"></x-button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-xs text-slate-400 italic">No files attached.</p>
+                    @endif
+                </div>
+            </x-card>
+
+            @can('banAsJudge', $submission->team)
+                <x-card title="Moderation" icon="exclamation-triangle" class="border-red-100 bg-red-50/30">
+                    <p class="text-xs text-slate-600 mb-4">Ban this team if you detect plagiarism or violation of rules.</p>
+                    <form method="POST" action="{{ route('judge.teams.ban', $submission->team) }}" class="space-y-3">
+                        @csrf
+                        <x-input type="textarea" name="reason" placeholder="Reason for ban..." required />
+                        <x-button type="submit" variant="danger" size="sm" onclick="return confirm('Ban this team and suspend all members?')">Ban Team</x-button>
+                    </form>
+                </x-card>
+            @endcan
         </div>
 
         {{-- Right Column: Scoring Panel --}}
         <div>
-            <div class="card" style="position:sticky; top:32px;">
-                <p class="text-card-title" style="margin-bottom:16px;">Scoring</p>
+            <div class="sticky top-[88px] space-y-6">
+                <x-card title="Evaluation" icon="star">
+                    <form method="POST" action="{{ route('judge.score.store', $submission) }}" class="space-y-6">
+                        @csrf
 
-                <form method="POST" action="{{ route('judge.score.store', $submission) }}" id="form-score">
-                    @csrf
+                        @foreach ($criteria as $criterion)
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-2xs font-bold text-slate-700 uppercase tracking-wider">{{ $criterion->name }}</label>
+                                    <span class="text-2xs font-semibold text-slate-400">MAX {{ $criterion->max_score }}</span>
+                                </div>
 
-                    @foreach ($criteria as $criterion)
-                        <div class="criterion-block">
-                            <div class="criterion-header">
-                                <span class="criterion-name">{{ $criterion->name }}</span>
-                                <span class="criterion-max">/ {{ $criterion->max_score }}</span>
+                                <x-input 
+                                    type="number" 
+                                    name="scores[{{ $criterion->id }}][score]"
+                                    min="0"
+                                    max="{{ $criterion->max_score }}"
+                                    value="{{ old('scores.'.$criterion->id.'.score', $existingScores->get($criterion->id)?->score ?? '') }}"
+                                    class="score-input"
+                                    required
+                                    :disabled="!$canScore"
+                                />
+
+                                <x-input 
+                                    type="textarea" 
+                                    name="scores[{{ $criterion->id }}][remarks]"
+                                    placeholder="Add remarks..."
+                                    rows="2"
+                                    class="min-h-[60px]"
+                                    :disabled="!$canScore"
+                                >{{ old('scores.'.$criterion->id.'.remarks', $existingScores->get($criterion->id)?->remarks ?? '') }}</x-input>
+                            </div>
+                        @endforeach
+
+                        <div class="pt-4 border-t border-slate-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm font-semibold text-slate-900">Total Score</span>
+                                <span id="total-score" class="text-2xl font-bold text-accent-600">0</span>
                             </div>
 
-                            <input type="number"
-                                   name="scores[{{ $criterion->id }}][score]"
-                                   class="form-input score-input @error("scores.{$criterion->id}.score") is-invalid @enderror"
-                                   min="0"
-                                   max="{{ $criterion->max_score }}"
-                                   value="{{ old("scores.{$criterion->id}.score", $existingScores->get($criterion->id)?->score ?? '') }}"
-                                   data-max="{{ $criterion->max_score }}"
-                                   placeholder="0"
-                                   {{ $canScore ? '' : 'readonly' }}
-                                   required>
-                            @error("scores.{$criterion->id}.score")
-                                <p class="form-error">{{ $message }}</p>
-                            @enderror
-
-                            <textarea name="scores[{{ $criterion->id }}][remarks]"
-                                      class="form-textarea"
-                                      style="min-height:60px; margin-top:8px;"
-                                      placeholder="Remarks (optional)"
-                                      {{ $canScore ? '' : 'readonly' }}>{{ old("scores.{$criterion->id}.remarks", $existingScores->get($criterion->id)?->remarks ?? '') }}</textarea>
+                            @if ($canScore)
+                                <x-button type="submit" variant="primary" fullWidth size="lg">Save Scores</x-button>
+                            @else
+                                <div class="p-3 bg-slate-100 border border-slate-200 rounded-lg text-center">
+                                    <p class="text-xs text-slate-500 font-medium">Scoring is closed</p>
+                                </div>
+                            @endif
                         </div>
-                    @endforeach
-
-                    {{-- Total Score Preview --}}
-                    <div class="scoring-total">
-                        <span class="scoring-total-label">Total Score</span>
-                        <span class="scoring-total-value" id="total-score">0</span>
-                    </div>
-
-                    @if ($canScore)
-                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:16px;" id="btn-submit-scores">
-                            Save Scores
-                        </button>
-                    @else
-                        <p class="text-helper" style="text-align:center; margin-top:16px;">
-                            Scoring is closed — results have been published.
-                        </p>
-                    @endif
-                </form>
+                    </form>
+                </x-card>
             </div>
         </div>
     </div>
 
-    @can('banAsJudge', $submission->team)
-        <div class="card" style="padding: 20px; margin-top: 24px;">
-            <h2 style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Suspend team</h2>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Ban this team and all members from the platform.</p>
-            <form method="POST" action="{{ route('judge.teams.ban', $submission->team) }}" onsubmit="return confirm('Ban this team and suspend all members?');">
-                @csrf
-                <textarea name="reason" class="form-input" rows="2" placeholder="Reason" required style="margin-bottom: 10px;"></textarea>
-                <button type="submit" class="btn btn-sm" style="background: var(--danger); color: white; border: none;">Ban team</button>
-            </form>
-        </div>
-    @endcan
-
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const inputs = document.querySelectorAll('.score-input');
+            const inputs = document.querySelectorAll('.score-input input');
             const totalEl = document.getElementById('total-score');
 
             function updateTotal() {
